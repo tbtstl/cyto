@@ -29,6 +29,26 @@ template LiveNeighborCount() {
     out <== sums[7];
 }
 
+template IsStablePopulation() {
+    signal input in;
+    signal output out;
+
+    // In the max case a cell can have 8 neighbors, so the max nbits the input for the components can have is 4 (1111 -> 15)
+    component gt = GreaterThan(4);
+    component lt = LessThan(4);
+    component or = OR();
+    gt.in[0] <== in;
+    gt.in[1] <== 1; // check if greater than 1 neighbor
+    lt.in[0] <== in;
+    lt.in[1] <== 4; // check if less than 4 neighbors
+    // b2n_a.in <== gt.out;
+    or.a <== gt.out;
+    or.b <== lt.out;
+
+    // out is 1 if greater than 3 or less than 2, 0 otherwise
+    out <== or.out;
+}
+
 template MostCommonNeighbor() {
     signal input neighbors[9];
     signal output out;
@@ -143,9 +163,12 @@ template GetCellValue(Width, Height, x, y) {
     liveNeighborCount.in[5] <== bottomRightAlive.out;
     liveNeighborCount.in[6] <== bottomAlive.out;
     liveNeighborCount.in[7] <== bottomLeftAlive.out;
+
+    component stablePopulation = IsStablePopulation();
+    stablePopulation.in <== liveNeighborCount.out;
     
 
-    // // If the number of live cells is greater than 3 or less than 2, the cell dies (over/under population)
+    // If the number of live cells is greater than 3 or less than 2, the cell dies (over/under population)
     // if(liveNeighborCount.out > 3 || liveNeighborCount.out < 2) {
     //     out <== 0;
     // } else if (liveNeighborCount.out == 2) {
