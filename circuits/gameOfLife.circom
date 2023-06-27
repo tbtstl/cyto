@@ -33,94 +33,24 @@ template IsStablePopulation() {
     signal input in;
     signal output out;
 
-    // In the max case a cell can have 8 neighbors, so the max nbits the input for the components can have is 4 (1111 -> 15)
-    component gt = GreaterThan(4);
-    component lt = LessThan(4);
-    component or = OR();
-    gt.in[0] <== in;
-    gt.in[1] <== 1; // check if greater than 1 neighbor
-    lt.in[0] <== in;
-    lt.in[1] <== 4; // check if less than 4 neighbors
-    // b2n_a.in <== gt.out;
-    or.a <== gt.out;
-    or.b <== lt.out;
+    component eq = IsEqual();
+    eq.in[0] <== in;
+    eq.in[1] <== 2;
 
-    // out is 1 if greater than 3 or less than 2, 0 otherwise
-    out <== or.out;
+    out <== eq.out;
 }
 
-template MostCommonNeighbor() {
-    signal input neighbors[9];
+template isGrowingPopulation() {
+    signal input in;
     signal output out;
-    var aCount = 0;
-    var bCount = 0;
-    var cCount = 0;
-    var dCount = 0;
 
-    for (var i = 0; i < 9; i++) {
-        if (neighbors[i] == 0) {
-            // do nothing
-        } else if (neighbors[i] == 1) {
-            aCount++;
-        } else if (neighbors[i] == 2) {
-            bCount++;
-        } else if (neighbors[i] == 4) {
-            cCount++;
-        } else if (neighbors[i] == 8) {
-            dCount++;
-        }
-    }
+    component eq = IsEqual();
+    eq.in[0] <== in;
+    eq.in[1] <== 3;
 
-    // Check if at least two counts have a value of 1
-    var oneCount = 0;
-    if(aCount == 1) {
-        oneCount++;
-    } else if(bCount == 1) {
-        oneCount++;
-    } else if(cCount == 1) {
-        oneCount++;
-    } else if(dCount == 1) {
-        oneCount++;
-    }
-
-
-    // There's probably a better way to find the max value, but this works for now
-    // Note that in the event of a tie, we kill the cell.
-    // We know there's a tie if multiple counts have a value of 1 (since this component is only verified at a total count of 3)
-    if(oneCount > 1) {
-        out <== 0;
-    } else {
-        if(aCount > bCount) {
-            if(aCount > cCount) {
-                if(aCount > dCount) {
-                    out <== 1;
-                } else {
-                    out <== 8;
-                }
-            } else {
-                if(cCount > dCount) {
-                    out <== 4;
-                } else {
-                    out <== 8;
-                }
-            }
-        } else {
-            if(bCount > cCount) {
-                if(bCount > dCount) {
-                    out <== 2;
-                } else {
-                    out <== 8;
-                }
-            } else {
-                if(cCount > dCount) {
-                    out <== 4;
-                } else {
-                    out <== 8;
-                }
-            }
-        }    
-    }
+    out <== eq.out;
 }
+
 
 
 template GetCellValue(Width, Height, x, y) {
@@ -166,30 +96,13 @@ template GetCellValue(Width, Height, x, y) {
 
     component stablePopulation = IsStablePopulation();
     stablePopulation.in <== liveNeighborCount.out;
-    
 
-    // If the number of live cells is greater than 3 or less than 2, the cell dies (over/under population)
-    // if(liveNeighborCount.out > 3 || liveNeighborCount.out < 2) {
-    //     out <== 0;
-    // } else if (liveNeighborCount.out == 2) {
-    //     // If the number of live cells is 2, the cell stays the same
-    //     out <== in[x][y];
-    // } else {
-    //     // If the number of live cells is 3, the cell is born or mutated to the most common neighbor type
-    //     component mostCommonNeighbor = MostCommonNeighbor();
-    //     mostCommonNeighbor.neighbors[0] <== left;
-    //     mostCommonNeighbor.neighbors[1] <== topLeft;
-    //     mostCommonNeighbor.neighbors[2] <== top;
-    //     mostCommonNeighbor.neighbors[3] <== topRight;
-    //     mostCommonNeighbor.neighbors[4] <== right;
-    //     mostCommonNeighbor.neighbors[5] <== bottomRight;
-    //     mostCommonNeighbor.neighbors[6] <== bottom;
-    //     mostCommonNeighbor.neighbors[7] <== bottomLeft;
-    //     mostCommonNeighbor.neighbors[8] <== in[x][y];
-    //     out <== mostCommonNeighbor.out;
-    // }
+    component growingPopulation = isGrowingPopulation();
+    growingPopulation.in <== liveNeighborCount.out;
 
-    out <== leftAlive.out;
+    // return 0 if unstable population, or current cellvalue if stable/growing
+    // TODO: right now this grows to current cellvalue, it should default to the most common neighbor if not alive
+    out <== growingPopulation.out + stablePopulation.out * in[x][y];
 }
 
 template GameOfLife(Width, Height) {
