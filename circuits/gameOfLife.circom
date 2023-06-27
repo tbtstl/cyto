@@ -51,6 +51,26 @@ template isGrowingPopulation() {
     out <== eq.out;
 }
 
+template FilteredNeighborCount(team) {
+    signal input in[8];
+    signal output out;
+    signal sums[8];
+    component eqs[8];
+
+    for(var i = 0; i < 8; i ++) {
+        eqs[i] = IsEqual();
+        eqs[i].in[0] <== in[i];
+        eqs[i].in[1] <== team;
+    }
+
+    sums[0] <== eqs[0].out;
+    for (var i=1; i < 8; i++) {
+        sums[i] <== sums[i - 1] + eqs[i].out;
+    }
+
+    out <== sums[7];
+}
+
 
 
 template GetCellValue(Width, Height, x, y) {
@@ -65,6 +85,16 @@ template GetCellValue(Width, Height, x, y) {
     var bottomRight = x == Width - 1 || y == Height - 1 ? 0 : in[x + 1][y + 1];
     var bottom = y == Height - 1 ? 0 : in[x][y + 1];
     var bottomLeft = x == 0 || y == Height - 1 ? 0 : in[x - 1][y + 1];
+
+    signal neighbors[8];
+    neighbors[0] <== left;
+    neighbors[1] <== topLeft;
+    neighbors[2] <== top;
+    neighbors[3] <== topRight;
+    neighbors[4] <== right;
+    neighbors[5] <== bottomRight;
+    neighbors[6] <== bottom;
+    neighbors[7] <== bottomLeft;
 
     component leftAlive = IsCellValueAlive();
     leftAlive.in <== left;
@@ -100,9 +130,23 @@ template GetCellValue(Width, Height, x, y) {
     component growingPopulation = isGrowingPopulation();
     growingPopulation.in <== liveNeighborCount.out;
 
-    // return 0 if unstable population, or current cellvalue if stable/growing
-    // TODO: right now this grows to current cellvalue, it should default to the most common neighbor if not alive
-    out <== growingPopulation.out + stablePopulation.out * in[x][y];
+    component teamACount = FilteredNeighborCount(1);
+    component teamBCount = FilteredNeighborCount(2);
+    component teamCountCompare = GreaterThan(2);
+    teamACount.in <== neighbors;
+    teamBCount.in <== neighbors;
+    teamCountCompare.in[0] <== teamACount.out;
+    teamCountCompare.in[1] <== teamBCount.out;
+
+    signal growthValue;
+    component cellIsZero = IsZero();
+    cellIsZero.in <== in[x][y];
+    // if team A (1) has more neighbors than team B (2), then teamCountCompare.out = 1, 0 otherwise
+    // growth value is 2 (team B) if A is less than B, and 1 if A is greater than B
+    growthValue <== growingPopulation.out * (2 - teamCountCompare.out);
+
+    // return the current value if a stable population, or the growth value if a growing population (0 if overpopulated)
+    out <== (stablePopulation.out * in[x][y]) + growthValue;
 }
 
 template GameOfLife(Width, Height) {
