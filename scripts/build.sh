@@ -24,7 +24,7 @@ snarkjs r1cs info build/circom/main.r1cs
 # Create a new zkey
 echo "Creating zkey..."
 start=$SECONDS
-snarkjs plonk setup circuit.r1cs pot20_final.ptau circuit_final.zkey
+snarkjs plonk setup build/circom/main.r1cs pot20_final.ptau circuit_final.zkey
 duration=$(( SECONDS - start ))
 echo "Zkey created in $duration seconds"
 
