@@ -1,3 +1,3 @@
-circom_build
+build
 node_modules
-
+*.ptau

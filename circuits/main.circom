@@ -7,10 +7,11 @@ include "./GameOfLife.circom";
 
 
 template Main() {
-    var Width = 10;
-    var Height = 10;
-    signal input in[Width][Height]; // The current state of the board
-    signal output out[Width][Height]; // The computed state of the board after one step
+    var Width = 2;
+    var Height = 2;
+    signal input current[Width][Height]; // The current state of the board
+    signal input next[Width][Height]; // The next state of the board
+    signal output out;
 
     // // convert input data to bit matrix
 	// component inputMatrix = CreateBitMatrix(Width, Height);
@@ -20,10 +21,12 @@ template Main() {
 
     // Instantiate Game of Life Circuit with input data
     component gameOfLife = GameOfLife(Width, Height);
-    gameOfLife.in <== in;
+    gameOfLife.in <== current;
 
-    out <== gameOfLife.out;
+    next === gameOfLife.out;
+    out <== 1;
 }
 
 
-component main { public [in]} = Main();
+
+component main {public [current, next]} = Main();
