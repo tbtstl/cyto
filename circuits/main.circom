@@ -6,9 +6,7 @@ include "../node_modules/circomlib/circuits/bitify.circom";
 include "./GameOfLife.circom";
 
 
-template Main() {
-    var Width = 2;
-    var Height = 2;
+template Main(Width, Height) {
     signal input current[Width][Height]; // The current state of the board
     signal input next[Width][Height]; // The next state of the board
     signal output out;
@@ -29,4 +27,4 @@ template Main() {
 
 
 
-component main {public [current, next]} = Main();
+component main {public [current, next]} = Main(64, 64);
