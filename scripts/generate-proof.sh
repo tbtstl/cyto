@@ -16,14 +16,14 @@ echo "Witness generated in $duration seconds"
 # generate proof
 echo "Generating proof..."
 start=$SECONDS
-snarkjs plonk prove build/circom/circuit_final.zkey build/circom/witness.wtns build/circom/proof.json build/circom/public.json
+snarkjs groth16 prove build/circom/circuit_final.zkey build/circom/witness.wtns build/circom/proof.json build/circom/public.json
 duration=$(( SECONDS - start ))
 echo "Proof generated in $duration seconds"
 
 # verify proof
 echo "Verifying proof..."
 start=$SECONDS
-snarkjs plonk verify build/circom/verification_key.json build/circom/public.json build/circom/proof.json
+snarkjs groth16 verify build/circom/verification_key.json build/circom/public.json build/circom/proof.json
 duration=$(( SECONDS - start ))
 echo "Proof verified in $duration seconds"
 
