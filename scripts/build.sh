@@ -3,11 +3,11 @@ set -e
 
 mkdir -p build
 
-if [ -f ./pot20_final.ptau ]; then
-    echo "pot20_final.ptau already exists. Skipping download."
+if [ -f ./pot17_final.ptau ]; then
+    echo "pot17_final.ptau already exists. Skipping download."
 else
-    echo 'Downloading pot20...'
-    curl https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_20.ptau -o pot20_final.ptau
+    echo 'Downloading pot17...'
+    curl https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_17.ptau -o pot17_final.ptau
 fi
 
 echo "Compiling: main..."
@@ -24,7 +24,7 @@ snarkjs r1cs info build/circom/main.r1cs
 # Create a new zkey
 echo "Creating zkey..."
 start=$SECONDS
-snarkjs plonk setup build/circom/main.r1cs pot20_final.ptau circuit_final.zkey
+snarkjs plonk setup build/circom/main.r1cs pot17_final.ptau build/circom/circuit_final.zkey
 duration=$(( SECONDS - start ))
 echo "Zkey created in $duration seconds"
 
