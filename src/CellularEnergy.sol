@@ -75,7 +75,6 @@ contract CellularEnergy is SafeOwnable, GameBoard {
     }
 
     function joinTeam(uint8 team) public {
-        console2.log("joining as", msg.sender);
         if (playerTeam[msg.sender][season] != 0) {
             // Ensure a user can't change teams mid season
             revert AlreadyJoinedTeamForSeason();

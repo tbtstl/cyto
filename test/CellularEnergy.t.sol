@@ -17,6 +17,9 @@ contract CellularEnergyTest is Test {
     function setUp() public {
         verifier = new Groth16Verifier();
         game = new CellularEnergy(owner, address(verifier));
+        vm.deal(player1, 1 ether);
+        vm.deal(player2, 1 ether);
+        vm.deal(player3, 1 ether);
     }
 
     function test_constructor() external {
@@ -46,13 +49,31 @@ contract CellularEnergyTest is Test {
     }
 
     function testJoinTeam_alreadyJoined() public {
-        console.log(player1, address(this));
         vm.prank(player1);
-        game.joinTeam(game.TEAM_1());
-        assertEq(game.playerTeam(player1, game.season()), game.TEAM_1());
+        game.joinTeam(1);
+        assertEq(game.playerTeam(player1, 1), 1);
 
+        vm.prank(player1);
         vm.expectRevert(CellularEnergy.AlreadyJoinedTeamForSeason.selector);
-        game.joinTeam(game.TEAM_2());
-        // vm.stopPrank();
+        game.joinTeam(2);
+    }
+
+    function testJoinTeam_InvalidTeam() public {
+        vm.prank(player1);
+        vm.expectRevert(CellularEnergy.InvalidTeam.selector);
+        game.joinTeam(3);
+    }
+
+    function testInjectCell(uint8 team, uint8 x, uint8 y) public {
+        vm.assume(team == game.TEAM_1() || team == game.TEAM_2());
+        vm.assume(x < game.GRID_SIZE() && y < game.GRID_SIZE());
+        vm.prank(player1);
+        game.joinTeam(team);
+        vm.prank(player1);
+        game.injectCell{value: 1000000000000000}(x, y);
+
+        console.log(team, game.getValueAtPosition(x, y));
+
+        assertEq(team, game.getValueAtPosition(x, y));
     }
 }
