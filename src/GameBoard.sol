@@ -26,9 +26,6 @@ contract GameBoard {
         uint index = _x;
         uint128 bitPosition = uint128((GRID_SIZE - 1 - _y) * CELL_SIZE_BITS);
 
-        // console.log(index, bitPosition);
-        // console.logBytes16(board[index]);
-
         // Get the current value at the specified grid square
         uint currentValue = getValueAtPosition(_x, _y);
 
@@ -36,27 +33,15 @@ contract GameBoard {
         if (currentValue == 0) {
             // Clear the current value at the grid square and set the new value.
             // Use bitwise operations to manipulate the individual bits.
-            console.logBytes16(bytes16(uint128(MAX_CELL_VALUE)));
             uint128 clearMask = ~(uint128(MAX_CELL_VALUE) << bitPosition);
-            console.log("clearMask");
-            console.logBytes16(bytes16(clearMask));
             uint128 setMask = uint128(_team) << bitPosition;
-            console.log("setMask");
-            console.logBytes16(bytes16(setMask));
-
             uint128 clearedGrid = uint128(board[index]) & clearMask;
-            console.log("clearedGrid");
-            console.logBytes16(bytes16(clearedGrid));
             uint128 updatedValue = clearedGrid | setMask;
-            console.log("updatedValue");
-            console.logBytes16(bytes16(updatedValue));
 
             board[index] = bytes16(updatedValue);
         } else {
             revert PositionOccupied();
         }
-
-        console.logBytes16(board[index]);
     }
 
     function _evolveBoardState(bytes memory _rawBoard) internal {
@@ -90,8 +75,6 @@ contract GameBoard {
         uint index = _x;
         uint128 bitPosition = (GRID_SIZE - 1 - _y) * CELL_SIZE_BITS;
 
-        console.log("shifting by", bitPosition);
-        console.logBytes16(bytes16(uint128(board[index])));
         // We just need a bitmask  to get the right number
         uint128 bitMask = uint128(MAX_CELL_VALUE) << bitPosition;
 

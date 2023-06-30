@@ -67,6 +67,8 @@ contract CellularEnergyTest is Test {
     function testInjectCell(uint8 team, uint8 x, uint8 y) public {
         vm.assume(team == game.TEAM_1() || team == game.TEAM_2());
         vm.assume(x < game.GRID_SIZE() && y < game.GRID_SIZE());
+        uint256 price = 1000000000000000;
+        uint256 maintenanceFee = (price * game.MAINTENANCE_FEE_PERCENT()) / 100;
         vm.prank(player1);
         game.joinTeam(team);
         vm.prank(player1);
@@ -75,5 +77,52 @@ contract CellularEnergyTest is Test {
         console.log(team, game.getValueAtPosition(x, y));
 
         assertEq(team, game.getValueAtPosition(x, y));
+        assertEq(game.playerContributions(player1, game.season()), price - maintenanceFee);
+        assertEq(game.teamContributions(team, game.season()), price - maintenanceFee);
+        assertEq(owner.balance, maintenanceFee);
+    }
+
+    function testInjectCell_OnlyPlayer() public {
+        vm.prank(player1);
+        vm.expectRevert(CellularEnergy.UnregisteredPlayer.selector);
+        game.injectCell{value: 1000000000000000}(0, 0);
+    }
+
+    function testInjectCell_OnlyDuringLiveGame() public {
+        vm.prank(player1);
+        game.joinTeam(1);
+
+        vm.warp(game.roundEnd());
+
+        vm.prank(player1);
+        vm.expectRevert(CellularEnergy.GameNotLive.selector);
+        game.injectCell{value: 1000000000000000}(0, 0);
+    }
+
+    function testInjectCell_PositionOutOfRange() public {
+        vm.prank(player1);
+
+        game.joinTeam(1);
+        vm.expectRevert(GameBoard.PositionOutOfRange.selector);
+        vm.prank(player1);
+        game.injectCell{value: 1000000000000000}(64, 64);
+    }
+
+    function testInjectCell_PositionOccupied() public {
+        vm.prank(player1);
+        game.joinTeam(1);
+        vm.prank(player1);
+        game.injectCell{value: 1000000000000000}(0, 0);
+        vm.prank(player1);
+        vm.expectRevert(GameBoard.PositionOccupied.selector);
+        game.injectCell{value: 1000000000000000}(0, 0);
+    }
+
+    function testInjectCell_InsufficientFunds() public {
+        vm.prank(player1);
+        game.joinTeam(1);
+        vm.prank(player1);
+        vm.expectRevert(CellularEnergy.InsufficientFunds.selector);
+        game.injectCell{value: 999999999999999}(0, 0);
     }
 }
