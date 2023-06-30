@@ -43,6 +43,6 @@ echo "Verification key exported in $duration seconds"
 mkdir -p contracts/
 echo "Generating solidity contract..."
 start=$SECONDS
-snarkjs zkey export solidityverifier build/circom/circuit_final.zkey contracts/verifier.sol
+snarkjs zkey export solidityverifier build/circom/circuit_final.zkey src/BoardVerifier.sol
 duration=$(( SECONDS - start ))
 echo "Solidity contract generated in $duration seconds"
