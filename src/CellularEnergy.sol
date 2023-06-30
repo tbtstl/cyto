@@ -5,6 +5,7 @@ pragma solidity ^0.8.17;
 import {SafeOwnable} from "./SafeOwnable.sol";
 import {GameBoard} from "./GameBoard.sol";
 import {Groth16Verifier} from "./BoardVerifier.sol";
+import "forge-std/console2.sol";
 
 contract CellularEnergy is SafeOwnable, GameBoard {
     uint256 public immutable ROUND_LENGTH = 2 minutes;
@@ -32,7 +33,7 @@ contract CellularEnergy is SafeOwnable, GameBoard {
 
     error GameNotFinished();
     error SeasonNotFinished();
-    error AlreadyJoinedTeamForSeason(uint256 team, uint256 season);
+    error AlreadyJoinedTeamForSeason();
     error InvalidTeam();
     error UnregisteredPlayer();
     error GameNotLive();
@@ -74,9 +75,10 @@ contract CellularEnergy is SafeOwnable, GameBoard {
     }
 
     function joinTeam(uint8 team) public {
+        console2.log("joining as", msg.sender);
         if (playerTeam[msg.sender][season] != 0) {
             // Ensure a user can't change teams mid season
-            revert AlreadyJoinedTeamForSeason(playerTeam[msg.sender][season], season);
+            revert AlreadyJoinedTeamForSeason();
         }
         if (team != TEAM_1 && team != TEAM_2) {
             revert InvalidTeam();
@@ -162,7 +164,7 @@ contract CellularEnergy is SafeOwnable, GameBoard {
         bytes memory emptyBoard = new bytes(FLATTENED_GRID_SIZE);
         _evolveBoardState(emptyBoard);
 
-        if (epoch == MAX_EPOCHS_PER_SEASON) {
+        if (epoch % MAX_EPOCHS_PER_SEASON == 0) {
             _startNewSeason();
         }
         _startNewEpoch();
