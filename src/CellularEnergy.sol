@@ -62,7 +62,6 @@ contract CellularEnergy is SafeOwnable, GameBoard {
         uint[2] calldata _pC,
         uint[128] calldata _pubSignals
     ) {
-        // TODO: validate first 64 pub signals represent the current board state
         if (verifier.verifyProof(_pA, _pB, _pC, _pubSignals)) {
             _;
         } else {
@@ -140,8 +139,22 @@ contract CellularEnergy is SafeOwnable, GameBoard {
         if (roundEnd > block.timestamp) {
             revert GameIsLive();
         }
-        // TODO: evolve board based on the [64..128] pub signals
-        // _evolveBoardState(_evolvedBoard);
+        // Split the signals into their input and output components
+        bytes16[64] memory inputSignals;
+        bytes16[64] memory outputSignals;
+        uint byteShift = 16 * 8; // number of bytes to shift the pub signals to the left
+        for (uint256 i = 0; i < 64; i++) {
+            inputSignals[i] = bytes16(bytes32(_pubSignals[i] << byteShift));
+            outputSignals[i] = bytes16(bytes32(_pubSignals[i + 64] << byteShift));
+        }
+        // Verify the input signals represent the current board state
+        if (keccak256(abi.encodePacked(inputSignals)) != keccak256(abi.encodePacked(board))) {
+            revert InvalidProof();
+        }
+        // Update the board state with the output signals
+        _evolveBoardState(outputSignals);
+
+        // Update the team scores
         (, uint256 team1Cells, uint256 team2Cells) = countCellValues();
         teamScore[TEAM_1][season] += team1Cells;
         teamScore[TEAM_2][season] += team2Cells;
@@ -161,7 +174,7 @@ contract CellularEnergy is SafeOwnable, GameBoard {
     }
 
     function _resetGame() internal {
-        bytes memory emptyBoard = new bytes(FLATTENED_GRID_SIZE);
+        bytes16[GRID_SIZE] memory emptyBoard;
         _evolveBoardState(emptyBoard);
 
         if (epoch % MAX_EPOCHS_PER_SEASON == 0) {

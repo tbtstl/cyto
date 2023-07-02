@@ -44,32 +44,21 @@ contract GameBoard {
         }
     }
 
-    // TODO: Update this function to take a bytes32[GRID_SIZE] and just force update everything.
-    function _evolveBoardState(bytes memory _rawBoard) internal {
-        if (_rawBoard.length != FLATTENED_GRID_SIZE) {
-            revert InvalidBoardLength();
+    function _evolveBoardState(bytes16[GRID_SIZE] memory _newBoard) internal {
+        board = _newBoard;
+        emit BoardEvolved(board);
+    }
+
+    function _convertBytes32BoardToBytes16(bytes32[GRID_SIZE] memory _inBoard) internal pure returns (bytes16[GRID_SIZE] memory) {
+        bytes16[GRID_SIZE] memory output;
+        for (uint i = 0; i < _inBoard.length; i++) {
+            output[i] = bytes16(_inBoard[i]); // Direct cast to bytes16 keeps only the least significant bits
         }
-        bytes16[GRID_SIZE] memory _board;
-        assembly {
-            let inputPtr := add(_rawBoard, 0x20) // skip length in dynamic array
+        return output;
+    }
 
-            for {
-                let i := 0
-            } lt(i, GRID_SIZE) {
-                i := add(i, 1)
-            } {
-                // Each row takes 16 bytes, so we can load it at once
-                let row := mload(inputPtr)
-
-                inputPtr := add(inputPtr, 0x10) // move to the next 16 bytes in the input
-
-                sstore(add(board.slot, mul(i, 0x10)), row)
-            }
-        }
-
-        board = _board;
-
-        emit BoardEvolved(_board);
+    function _getBoardHash() internal view returns (bytes32) {
+        return keccak256(abi.encodePacked(board));
     }
 
     function getValueAtPosition(uint8 _x, uint8 _y) public view returns (uint) {
