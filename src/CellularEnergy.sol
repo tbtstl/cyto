@@ -102,7 +102,7 @@ contract CellularEnergy is SafeOwnable, GameBoard {
         emit NewCell(_x, _y, team, msg.sender);
     }
 
-    function cashOutSeason(uint256 _season, address recipient) public {
+    function claimSeasonRewards(uint256 _season, address recipient) public {
         // Check that the season is over
         if (_season >= season) {
             revert SeasonNotFinished();

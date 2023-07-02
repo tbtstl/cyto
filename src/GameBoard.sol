@@ -72,9 +72,11 @@ contract GameBoard {
     }
 
     function countCellValues() public view returns (uint count0, uint count1, uint count2) {
-        for (uint i = 0; i < GRID_SIZE; i++) {
-            for (uint j = 0; j < GRID_SIZE * CELL_SIZE_BITS; j += CELL_SIZE_BITS) {
-                uint value = (uint(bytes32(board[i])) >> j) & MAX_CELL_VALUE;
+        uint8 x = 0;
+        uint8 y = 0;
+        for (x = 0; x < GRID_SIZE; x++) {
+            for (y = 0; y < GRID_SIZE; y++) {
+                uint value = getValueAtPosition(x, y);
                 if (value == 0) count0++;
                 else if (value == 1) count1++;
                 else if (value == 2) count2++;

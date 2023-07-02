@@ -30,6 +30,8 @@ echo "Proof verified in $duration seconds"
 # generate call
 echo "Generating call..."
 start=$SECONDS
-snarkjs zkey export soliditycalldata build/circom/public.json build/circom/proof.json > build/circom/call.txt
+cd build/circom
+snarkjs generatecall > call.txt
+cd ../..
 duration=$(( SECONDS - start ))
 echo "Call generated in $duration seconds"
