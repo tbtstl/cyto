@@ -25,4 +25,4 @@ template Main(Width, Height) {
 
 
 
-component main {public [current, next]} = Main(3, 3);
+component main {public [current, next]} = Main(64, 64);

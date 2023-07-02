@@ -8,7 +8,7 @@ import {Groth16Verifier} from "./BoardVerifier.sol";
 import "forge-std/console2.sol";
 
 contract CellularEnergy is SafeOwnable, GameBoard {
-    uint256 public immutable ROUND_LENGTH = 2 minutes;
+    uint256 public immutable ROUND_LENGTH = 15 minutes;
     uint256 public immutable EPOCH_LENGTH = 1 days;
     uint256 public immutable SEASON_LENGTH = 7 days;
     uint256 public immutable MAX_EPOCHS_PER_SEASON = 7; // 7 days
@@ -60,7 +60,7 @@ contract CellularEnergy is SafeOwnable, GameBoard {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[8193] calldata _pubSignals
+        uint[128] calldata _pubSignals
     ) {
         if (verifier.verifyProof(_pA, _pB, _pC, _pubSignals)) {
             _;
