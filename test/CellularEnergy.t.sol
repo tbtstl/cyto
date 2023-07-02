@@ -25,7 +25,7 @@ contract CellularEnergyTest is Test {
     function test_constructor() external {
         assertEq(game.owner(), owner);
         assertEq(address(game.verifier()), address(verifier));
-        assertEq(game.ROUND_LENGTH(), 2 minutes);
+        assertEq(game.ROUND_LENGTH(), 15 minutes);
         assertEq(game.EPOCH_LENGTH(), 1 days);
         assertEq(game.SEASON_LENGTH(), 7 days);
         assertEq(game.MAX_EPOCHS_PER_SEASON(), 7);
@@ -37,7 +37,7 @@ contract CellularEnergyTest is Test {
         assertEq(game.round(), 1);
         assertEq(game.epoch(), 1);
         assertEq(game.season(), 1);
-        assertEq(game.roundEnd(), block.timestamp + 2 minutes);
+        assertEq(game.roundEnd(), block.timestamp + 15 minutes);
     }
 
     function testJoinTeam() external {
