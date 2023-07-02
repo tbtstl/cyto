@@ -1,30 +1,28 @@
-pragma circom  2.0.0;
-
-include "../node_modules/circomlib/circuits/poseidon.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
+pragma circom  2.1.6;
 
 include "./gameOfLife.circom";
+include "./bytesToBoard.circom";
 
 
 template Main(Width, Height) {
-    signal input current[Width][Height]; // The current state of the board
-    signal input next[Width][Height]; // The next state of the board
-    signal output out;
+    signal input current[Width]; // The current state of the board, in rows of 16bytes
+    signal input next[Width]; // The next state of the board, in rows of 16bytes
 
-    // // convert input data to bit matrix
-	// component inputMatrix = CreateBitMatrix(Width, Height);
-	// for (var i = 0; i < k; i++) {
-	// 	dataMatrix.in[i] <== current[i];
-	// }
+    // convert input data to 2d board
+    component inputBoard = BytesToBoard(Width, Height);
+    component outputBoard = BytesToBoard(Width, Height);
+    inputBoard.in <== current;
+    outputBoard.in <== next;
 
-    // Instantiate Game of Life Circuit with input data
+
+    // Instantiate Game of Life Circuit with converted input data
     component gameOfLife = GameOfLife(Width, Height);
-    gameOfLife.in <== current;
+    gameOfLife.in <== inputBoard.out;
 
-    next === gameOfLife.out;
-    out <== 1;
+    // Verify converted output data matches game of life circuit output
+    outputBoard.out === gameOfLife.out;
 }
 
 
 
-component main {public [current, next]} = Main(64, 64);
+component main {public [current, next]} = Main(3, 3);
