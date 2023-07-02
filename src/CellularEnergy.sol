@@ -14,7 +14,7 @@ contract CellularEnergy is SafeOwnable, GameBoard {
     uint256 public immutable MAX_EPOCHS_PER_SEASON = 7; // 7 days
     uint256 public immutable MAX_ROUNDS_PER_EPOCH = 720; // 1 day / 2 minutes
     uint256 public immutable BASE_CELL_INJECTION_PRICE = 1000000000000000; // 0.001 ETH
-    uint256 public immutable MAINTENANCE_FEE_PERCENT = 51; // 5%, used to refill the prover that evolves the board each round
+    uint256 public immutable MAINTENANCE_FEE_PERCENT = 5; // 5%, used to refill the prover that evolves the board each round
     uint8 public immutable TEAM_1 = 1;
     uint8 public immutable TEAM_2 = 2;
     uint256 public round;
