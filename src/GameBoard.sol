@@ -44,6 +44,7 @@ contract GameBoard {
         }
     }
 
+    // TODO: Update this function to take a bytes32[GRID_SIZE] and just force update everything.
     function _evolveBoardState(bytes memory _rawBoard) internal {
         if (_rawBoard.length != FLATTENED_GRID_SIZE) {
             revert InvalidBoardLength();

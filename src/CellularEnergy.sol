@@ -62,6 +62,7 @@ contract CellularEnergy is SafeOwnable, GameBoard {
         uint[2] calldata _pC,
         uint[128] calldata _pubSignals
     ) {
+        // TODO: validate first 64 pub signals represent the current board state
         if (verifier.verifyProof(_pA, _pB, _pC, _pubSignals)) {
             _;
         } else {
@@ -131,16 +132,16 @@ contract CellularEnergy is SafeOwnable, GameBoard {
     }
 
     function evolveBoardState(
-        bytes memory _evolvedBoard,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[8193] calldata _pubSignals
+        uint[128] calldata _pubSignals
     ) public withValidProof(_pA, _pB, _pC, _pubSignals) {
         if (roundEnd > block.timestamp) {
             revert GameIsLive();
         }
-        _evolveBoardState(_evolvedBoard);
+        // TODO: evolve board based on the [64..128] pub signals
+        // _evolveBoardState(_evolvedBoard);
         (, uint256 team1Cells, uint256 team2Cells) = countCellValues();
         teamScore[TEAM_1][season] += team1Cells;
         teamScore[TEAM_2][season] += team2Cells;
