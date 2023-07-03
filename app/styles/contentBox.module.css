@@ -1,0 +1,38 @@
+.box {
+    display: flex;
+    width: 40.68425rem;
+    padding: 0.625rem;
+    align-items: flex-start;
+    align-content: flex-start;
+    gap: 0rem 0.3125rem;
+    flex-wrap: wrap;
+
+    background: var(--color-offwhite);
+    box-shadow: 4px 4px 0px 0px var(--color-red), -4px -4px 0px 0px var(--color-blue);
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+}
+
+.buttonContainer {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+}
+
+.center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@media(max-width: 600px) {
+    .box {
+        width: 20.68425rem
+    }
+}

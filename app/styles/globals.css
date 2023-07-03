@@ -1,0 +1,47 @@
+@import url(//fonts.googleapis.com/earlyaccess/nicomoji.css);
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
+
+:root {
+    --color-yellow: #FFED49;
+    --color-blue: #5707FF;
+    --color-clearBlue: rgba(87, 7, 255, 0.3);
+    --color-red: #FF4B4B;
+    --color-clearRed: rgba(255, 75, 75, 0.3);
+    --color-offwhite: #eeeeee;
+    --color-offWhiteDark: #ddd;
+    --color-offWhiteDarker: #aaa;
+    --color-black: #000000;
+}
+
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-yellow);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Nico Moji', sans-serif;
+    font-weight: 400;
+    font-size: 2.25rem;
+    text-transform: uppercase;
+    margin: 0;
+
+}
+
+p {
+    font-size: 0.875rem;
+    font-family: 'Space Mono';
+}
+
+button {
+    all: unset;
+    font-size: 0.875rem;
+    font-family: 'Space Mono';
+}
