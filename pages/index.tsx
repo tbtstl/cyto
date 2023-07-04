@@ -10,6 +10,7 @@ import { FooterButtons } from '../components/footerButtons';
 import { Button } from '../components/button';
 import { GetStaticProps } from 'next';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 
 interface GameStats {
     currentSeason: string,
@@ -22,6 +23,8 @@ interface GameStats {
 export default function Page(gameStats: GameStats) {
     const router = useRouter();
     const { openConnectModal } = useConnectModal();
+    const { address } = useAccount()
+
 
     const tie = BigInt(gameStats.blueScore) === BigInt(gameStats.redScore);
     const teamBlueWinning = BigInt(gameStats.blueScore) > BigInt(gameStats.redScore);
@@ -41,8 +44,8 @@ export default function Page(gameStats: GameStats) {
                 <p>Connect to ZORA to join the game.</p>
             </ContentBox>
             <FooterButtons>
-                <Button onClick={openConnectModal}>
-                    Connect to ZORA
+                <Button onClick={() => address ? router.push('/game') : openConnectModal()}>
+                    {address ? 'Play Game' : 'Connect to ZORA'}
                 </Button>
                 <Button onClick={() => { router.push('/how-to-play') }}>How to Play</Button>
             </FooterButtons>
