@@ -1,0 +1,16 @@
+.pageContainer {
+    display: flex;
+    gap: 3rem;
+    ;
+}
+
+.gameCanvas {
+    width: 40rem;
+    max-width: 60vw;
+    max-height: 60vw;
+    height: 40rem;
+    flex-shrink: 0;
+    border: 1px solid #000;
+    background: #EEE;
+    box-shadow: 4px 4px 0px 0px #000;
+}
