@@ -20,10 +20,10 @@ const PROOF_FN = 'proof.json'
 const PUBLIC_FN = 'public.json'
 const execAsync = promisify(exec);
 
-export async function POST() {
+export default async function handler(req, res) {
     const evolvedBoard = await handleEvolveBoardRequest()
 
-    return NextResponse.json({ evolvedBoard })
+    return res.json({ evolvedBoard })
 }
 
 

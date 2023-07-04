@@ -18,3 +18,10 @@
     box-shadow: -2px -2px 0px 0px var(--color-blue), 2px 2px 0px 0px var(--color-red);
     background-color: var(--color-offWhiteDark);
 }
+
+.footerContainer {
+    margin-top: 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+}
