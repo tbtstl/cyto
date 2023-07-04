@@ -1,0 +1,13 @@
+<svg width="202" height="82" viewBox="0 0 202 82" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.5" y="0.5" width="81" height="81" fill="#EEEEEE" stroke="black"/>
+<rect x="120.5" y="0.5" width="81" height="81" fill="#EEEEEE" stroke="black"/>
+<rect x="25" y="33" width="16" height="16" fill="#5707FF"/>
+<rect x="145" y="33" width="16" height="16" fill="#5707FF"/>
+<rect x="41" y="17" width="16" height="16" fill="#5707FF"/>
+<rect x="161" y="17" width="16" height="16" fill="#5707FF"/>
+<rect x="41" y="33" width="16" height="16" fill="#FF4B4B"/>
+<rect x="161" y="33" width="16" height="16" fill="#FF4B4B"/>
+<rect x="41" y="49" width="16" height="16" fill="#FF4B4B"/>
+<rect x="161" y="49" width="16" height="16" fill="#FF4B4B"/>
+<path d="M120.663 41.7071C121.054 41.3166 121.054 40.6834 120.663 40.2929L114.299 33.9289C113.909 33.5384 113.276 33.5384 112.885 33.9289C112.494 34.3195 112.494 34.9526 112.885 35.3431L118.542 41L112.885 46.6569C112.494 47.0474 112.494 47.6805 112.885 48.0711C113.276 48.4616 113.909 48.4616 114.299 48.0711L120.663 41.7071ZM81 42H119.956V40H81V42Z" fill="black"/>
+</svg>

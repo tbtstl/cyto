@@ -1,9 +1,9 @@
 import * as React from 'react'
+import { useRouter } from 'next/router'
 import { createPublicClient, formatEther, http } from 'viem';
 import { USE_MAINNET, CONTRACT_ADDRESS, RED_TEAM_NUMBER, BLUE_TEAM_NUMBER } from '../constants/utils'
 import { zora, zoraTestnet } from 'viem/chains';
 import abi from '../constants/abi.json';
-import '../styles/globals.css'
 import { ContentBox } from '../components/contentBox'
 
 import { FooterButtons } from '../components/footerButtons';
@@ -19,6 +19,7 @@ interface GameStats {
 }
 
 export default function Page(gameStats: GameStats) {
+    const router = useRouter();
     const tie = BigInt(gameStats.blueScore) === BigInt(gameStats.redScore);
     const teamBlueWinning = BigInt(gameStats.blueScore) > BigInt(gameStats.redScore);
 
@@ -40,7 +41,7 @@ export default function Page(gameStats: GameStats) {
                 <Button onClick={() => { }}>
                     Connect to ZORA
                 </Button>
-                <Button>How to Play</Button>
+                <Button onClick={() => { router.push('/how-to-play') }}>How to Play</Button>
             </FooterButtons>
         </div>
     )
