@@ -6,4 +6,8 @@ module.exports = {
         })
         return config
     },
+    experimental: {
+        serverActions: true,
+    },
+
 }

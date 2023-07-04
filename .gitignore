@@ -11,3 +11,4 @@ circuit.wasm
 snarKInput.json
 proof.json
 public.json
+calldata.txt

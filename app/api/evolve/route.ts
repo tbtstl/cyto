@@ -6,16 +6,12 @@ import { createWalletClient, hexToBigInt, http, publicActions } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { zora, zoraTestnet } from 'viem/chains';
 import axios from 'axios'
-import { groth16, wtns } from 'snarkjs';
+import { groth16 } from 'snarkjs';
 import fs from 'fs';
-import abi from '../../../constants/abi.json';
+import abi from '../../constants/abi.json';
+import { USE_MAINNET, GRID_SIZE, CELL_SIZE_BITS, MAX_CELL_VALUE, CONTRACT_ADDRESS } from '../../constants/utils'
 
 
-
-const USE_MAINNET = process.env.USE_MAINNET === 'true';
-const GRID_SIZE = 64;
-const CELL_SIZE_BITS = 2;
-const MAX_CELL_VALUE = 3;
 const VERIFICATION_KEY = 'verification_key.json'
 const CIRCUIT_KEY = 'circuit_final.zkey'
 const CIRCUIT_WASM = 'circuit.wasm'
@@ -24,7 +20,7 @@ const PROOF_FN = 'proof.json'
 const PUBLIC_FN = 'public.json'
 const execAsync = promisify(exec);
 
-export async function GET() {
+export async function POST() {
     const evolvedBoard = await handleEvolveBoardRequest()
 
     return NextResponse.json({ evolvedBoard })
@@ -33,7 +29,6 @@ export async function GET() {
 
 async function handleEvolveBoardRequest() {
     const account = privateKeyToAccount(process.env.CELLULAR_ENERGY_VERIFIER_PK as `0x${string}`);
-    const contractAddress = process.env.NEXT_PUBLIC_CELLULAR_ENERGY_ADDRESS as `0x${string}`;
     const client = createWalletClient({
         account,
         chain: USE_MAINNET ? zora : zoraTestnet,
@@ -41,21 +36,24 @@ async function handleEvolveBoardRequest() {
     }).extend(publicActions)
     let evolvedBoard = false
 
+    console.log({ CONTRACT_ADDRESS })
+
     // First, check the time remaining in the round
     const roundEnd = await client.readContract({
-        address: contractAddress,
+        address: CONTRACT_ADDRESS,
         abi,
         functionName: 'roundEnd'
     }) as BigInt
 
     // If the game is still playable, no action is needed. 
+    console.log(roundEnd.toString(), Date.now() / 1000)
     if (parseInt(roundEnd.toString()) > Date.now() / 1000) {
         console.log(`game is still playable for ${parseInt(roundEnd.toString()) - Date.now() / 1000} seconds`)
         return evolvedBoard
     } else {
         // Get the board state and deconstruct it into a 2D array
         console.log('constructing grid...');
-        const [grid, rowInputs] = await constructGridFromContractData(client, contractAddress);
+        const [grid, rowInputs] = await constructGridFromContractData(client, CONTRACT_ADDRESS);
         // run game of life for one iteration, and return the rows as bigint strings
         console.log('generating output...')
         const rowOutputs = generateGameOfLifeOutput(grid as number[][]);
@@ -95,7 +93,7 @@ async function handleEvolveBoardRequest() {
 
         console.log('evolving board...')
         const { request } = await client.simulateContract({
-            address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+            address: CONTRACT_ADDRESS,
             abi,
             functionName: 'evolveBoardState',
             args

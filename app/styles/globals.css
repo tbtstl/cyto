@@ -1,8 +1,8 @@
 @import url(//fonts.googleapis.com/earlyaccess/nicomoji.css);
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-    --color-yellow: #FFED49;
+    --color-bg: #ffcfff;
     --color-blue: #5707FF;
     --color-clearBlue: rgba(87, 7, 255, 0.3);
     --color-red: #FF4B4B;
@@ -18,7 +18,7 @@ html,
 body {
     margin: 0;
     padding: 0;
-    background-color: var(--color-yellow);
+    background-color: var(--color-bg);
 }
 
 h1,
@@ -44,4 +44,12 @@ button {
     all: unset;
     font-size: 0.875rem;
     font-family: 'Space Mono';
+}
+
+.red {
+    color: var(--color-red);
+}
+
+.blue {
+    color: var(--color-blue);
 }

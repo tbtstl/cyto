@@ -1,5 +1,6 @@
 .box {
     display: flex;
+    flex-direction: column;
     width: 40.68425rem;
     padding: 0.625rem;
     align-items: flex-start;
