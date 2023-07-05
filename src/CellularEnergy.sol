@@ -12,7 +12,7 @@ contract CellularEnergy is SafeOwnable, GameBoard {
     uint256 public immutable EPOCH_LENGTH = 1 days;
     uint256 public immutable SEASON_LENGTH = 7 days;
     uint256 public immutable MAX_EPOCHS_PER_SEASON = 7; // 7 days
-    uint256 public immutable MAX_ROUNDS_PER_EPOCH = 720; // 1 day / 2 minutes
+    uint256 public immutable MAX_ROUNDS_PER_EPOCH = 96; // 1 day / 15 minutes
     uint256 public immutable BASE_CELL_INJECTION_PRICE = 1000000000000000; // 0.001 ETH
     uint256 public immutable MAINTENANCE_FEE_PERCENT = 5; // 5%, used to refill the prover that evolves the board each round
     uint8 public immutable TEAM_1 = 1;
@@ -88,10 +88,10 @@ contract CellularEnergy is SafeOwnable, GameBoard {
     }
 
     function injectCell(uint8 _x, uint8 _y) public payable onlyPlayer onlyDuringLiveGame {
-        if (msg.value != BASE_CELL_INJECTION_PRICE * round) {
+        if (msg.value != BASE_CELL_INJECTION_PRICE * epoch) {
             revert InsufficientFunds();
         }
-        uint256 maintenanceFee = (BASE_CELL_INJECTION_PRICE * round * MAINTENANCE_FEE_PERCENT) / 100;
+        uint256 maintenanceFee = (BASE_CELL_INJECTION_PRICE * epoch * MAINTENANCE_FEE_PERCENT) / 100;
         uint256 remainder = msg.value - maintenanceFee;
         uint8 team = playerTeam[msg.sender][season];
         teamContributions[team][season] += remainder;

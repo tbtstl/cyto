@@ -3,9 +3,10 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { WagmiConfig, configureChains, createConfig } from 'wagmi'
 import { publicProvider } from 'wagmi/providers/public'
 import {
-    zora
+    zora,
+    zoraTestnet
 } from 'wagmi/chains';
-import { USE_MAINNET, zoraTestnet } from '../constants/utils'
+import { USE_MAINNET } from '../constants/utils'
 import { RainbowKitProvider, getDefaultWallets } from '@rainbow-me/rainbowkit'
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
