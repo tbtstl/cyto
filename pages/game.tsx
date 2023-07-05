@@ -10,7 +10,7 @@ import { ContentBox } from '../components/contentBox'
 import { FooterButtons } from '../components/footerButtons';
 import { Button } from '../components/button';
 import { GetStaticProps } from 'next';
-import { useAccount } from 'wagmi';
+import { useAccount, useContractRead } from 'wagmi';
 import { useEffect, useState } from 'react';
 import { GameBoard } from '../components/gameBoard';
 import { useInterval } from '../hooks/useInterval';
@@ -18,6 +18,7 @@ import { useInterval } from '../hooks/useInterval';
 interface GameProps {
     currentGame: string,
     currentRound: string,
+    currentSeason: string,
     redScore: string,
     blueScore: string,
     prizePool: string
@@ -28,6 +29,12 @@ export default function Page(props: GameProps) {
     const router = useRouter();
     const { address, isDisconnected } = useAccount()
     const [timeToEvolution, setTimeToEvolution] = useState(timeRemaining(parseInt(props.roundEnd)));
+    const { data: playerTeam } = useContractRead({
+        address: CONTRACT_ADDRESS,
+        abi,
+        functionName: 'playerTeam',
+        args: [address, props.currentSeason]
+    })
 
     useEffect(() => {
         if (isDisconnected) {
@@ -74,7 +81,11 @@ export default function Page(props: GameProps) {
                         </p>
                     </ContentBox>
                     <FooterButtons>
-                        <Button onClick={() => { router.push('/join') }}>Join Team</Button>
+                        {!playerTeam ? (
+                            <Button onClick={() => { router.push('/join') }}>Join Team</Button>
+                        ) : (
+                            <Button onClick={() => { router.push('/join') }}>Place 0 {parseInt(playerTeam as string) === RED_TEAM_NUMBER ? 'RED' : 'BLUE'} cells</Button>
+                        )}
                         <Button onClick={() => { router.push('/how-to-play') }}>How to Play</Button>
                     </FooterButtons>
                 </div>
@@ -114,5 +125,5 @@ export const getStaticProps: GetStaticProps<GameProps> = async () => {
     const roundEnd = (await client.readContract({ ...contractConfig, functionName: 'roundEnd' })).toString()
 
 
-    return { props: { currentGame, currentRound, redScore, blueScore, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd }, revalidate: 60 }
+    return { props: { currentGame, currentRound, currentSeason, redScore, blueScore, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd }, revalidate: 1 }
 }
