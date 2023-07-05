@@ -70,11 +70,11 @@ export default function Page(props: GameProps) {
                         </p>
                         <p>
                             The current cost to place a cell is <b>{price} ETH</b>.<br />
-                            The current prize pool is <b>0.19 ETH</b>.
+                            The current prize pool is <b>{formatEther(BigInt(props.prizePool))} ETH</b>.
                         </p>
                     </ContentBox>
                     <FooterButtons>
-                        <Button onClick={() => { router.push('/game') }}>Join Team</Button>
+                        <Button onClick={() => { router.push('/join') }}>Join Team</Button>
                         <Button onClick={() => { router.push('/how-to-play') }}>How to Play</Button>
                     </FooterButtons>
                 </div>

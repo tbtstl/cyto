@@ -14,9 +14,25 @@
     box-shadow: -1px -1px 0px 0px var(--color-blue), 1px 1px 0px 0px var(--color-red);
 }
 
+.base.red:hover {
+    box-shadow: 1px 1px 0px 0px var(--color-red);
+}
+
+.base.blue:hover {
+    box-shadow: -1px -1px 0px 0px var(--color-blue)
+}
+
 .base:active {
     box-shadow: -2px -2px 0px 0px var(--color-blue), 2px 2px 0px 0px var(--color-red);
     background-color: var(--color-offWhiteDark);
+}
+
+.base.red:active {
+    box-shadow: 2px 2px 0px 0px var(--color-red);
+}
+
+.base.blue:active {
+    box-shadow: -2px -2px 0px 0px var(--color-blue);
 }
 
 .footerContainer {
