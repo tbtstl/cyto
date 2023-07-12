@@ -102,6 +102,22 @@ contract CellularEnergy is SafeOwnable, GameBoard {
         emit NewCell(_x, _y, team, msg.sender);
     }
 
+    function injectCells(uint8[2][] calldata _cells) public payable onlyPlayer onlyDuringLiveGame {
+        if (msg.value != BASE_CELL_INJECTION_PRICE * epoch * _cells.length) {
+            revert InsufficientFunds();
+        }
+        uint256 maintenanceFee = (BASE_CELL_INJECTION_PRICE * epoch * MAINTENANCE_FEE_PERCENT * _cells.length) / 100;
+        uint256 remainder = msg.value - maintenanceFee;
+        uint8 team = playerTeam[msg.sender][season];
+        teamContributions[team][season] += remainder;
+        playerContributions[msg.sender][season] += remainder;
+        for (uint256 i = 0; i < _cells.length; i++) {
+            _injectCell(_cells[i][0], _cells[i][1], team);
+            emit NewCell(_cells[i][0], _cells[i][1], team, msg.sender);
+        }
+        _transferFunds(owner, maintenanceFee);
+    }
+
     function claimSeasonRewards(uint256 _season, address recipient) public {
         // Check that the season is over
         if (_season >= season) {

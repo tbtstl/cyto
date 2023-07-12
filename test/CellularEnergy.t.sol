@@ -198,7 +198,7 @@ contract CellularEnergyTest is Test {
         assertEq(game.EPOCH_LENGTH(), 1 days);
         assertEq(game.SEASON_LENGTH(), 7 days);
         assertEq(game.MAX_EPOCHS_PER_SEASON(), 7);
-        assertEq(game.MAX_ROUNDS_PER_EPOCH(), 720);
+        assertEq(game.MAX_ROUNDS_PER_EPOCH(), 96);
         assertEq(game.BASE_CELL_INJECTION_PRICE(), 1000000000000000);
         assertEq(game.MAINTENANCE_FEE_PERCENT(), 5);
         assertEq(game.TEAM_1(), 1);
