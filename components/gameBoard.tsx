@@ -1,18 +1,14 @@
 import * as React from 'react';
 import styles from '../styles/game.module.css';
-import { useCallback } from 'react';
 import { GRID_SIZE } from '../constants/utils';
 
-export function GameBoard({ grid }: { grid: number[][] }) {
 
-    console.log({ grid })
-
-    const onCellClick = useCallback(() => { }, [])
+export function GameBoard({ grid, cellClickCB }: { grid: number[][], cellClickCB: (x: number, y: number) => void }) {
 
     return (
         <div className={styles.gameCanvas}>
             {[...Array(GRID_SIZE)].map((_, x) =>
-                [...Array(GRID_SIZE)].map((_, y) => <Cell key={`${x}-${y}`} x={x} y={y} value={grid[x][y]} cb={onCellClick} />)
+                [...Array(GRID_SIZE)].map((_, y) => <Cell x={x} y={y} value={grid[x][y]} cb={cellClickCB} />)
             )}
         </div>
     )
@@ -20,6 +16,6 @@ export function GameBoard({ grid }: { grid: number[][] }) {
 
 function Cell({ x, y, value, cb }: { x: number, y: number, value: number, cb: (x: number, y: number) => void }) {
     return (
-        <div onClick={() => value ?? cb(x, y)} />
+        <div className={styles[`team-${value.toString()}`]} onClick={() => cb(x, y)} />
     )
 }

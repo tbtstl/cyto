@@ -8,7 +8,7 @@ import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
 import { useCallback, useEffect } from "react";
 
 const contractConfig = {
-    address: process.env.NEXT_PUBLIC_CELLULAR_ENERGY_ADDRESS,
+    address: process.env.NEXT_PUBLIC_CELLULAR_ENERGY_ADDRESS as `0x${string}`,
     abi,
     functionName: 'joinTeam',
 }
@@ -43,9 +43,9 @@ export default function Page() {
 
     const handleButtonClick = useCallback((team: number) => () => {
         if (team === BLUE_TEAM_NUMBER) {
-            blueWrite();
+            blueWrite && blueWrite();
         } else {
-            redWrite();
+            redWrite && redWrite();
         }
     }, [blueWrite, redWrite])
 

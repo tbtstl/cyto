@@ -11,7 +11,7 @@ import { FooterButtons } from '../components/footerButtons';
 import { Button } from '../components/button';
 import { GetStaticProps } from 'next';
 import { useAccount, useContractRead } from 'wagmi';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GameBoard } from '../components/gameBoard';
 import { useInterval } from '../hooks/useInterval';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
@@ -27,6 +27,11 @@ interface GameProps {
     roundEnd: string
 }
 
+type StagedCellKey = `${number}-${number}`
+type StagedCellMapping = { [key: StagedCellKey]: boolean }
+const stagedCellKey = (x: number, y: number) => `${x}-${y}` as StagedCellKey
+
+
 export default function Page(props: GameProps) {
     const router = useRouter();
     const { address, isDisconnected } = useAccount()
@@ -38,6 +43,8 @@ export default function Page(props: GameProps) {
         functionName: 'playerTeam',
         args: [address, props.currentSeason]
     })
+    const [stagedCells, setStagedCells] = useState<StagedCellMapping>({})
+    const numStagedChanges = useMemo(() => Object.keys(stagedCells).filter((k) => !!stagedCells[k as StagedCellKey]).length, [stagedCells]);
 
     useInterval(() => {
         const updatedTimeToEvolution = timeRemaining(parseInt(props.roundEnd));
@@ -50,20 +57,44 @@ export default function Page(props: GameProps) {
     const tie = BigInt(props.blueScore) === BigInt(props.redScore);
     const teamBlueWinning = BigInt(props.blueScore) > BigInt(props.redScore);
     const price = formatEther(BigInt(props.currentRound) * parseEther('0.0001'));
+
+    const onCellClick = useCallback((x: number, y: number) => {
+        if (!playerTeam) { return }
+        setStagedCells({ ...stagedCells, [stagedCellKey(x, y)]: !stagedCells[stagedCellKey(x, y)] })
+    }, [stagedCells, setStagedCells, playerTeam])
+
+
+    // Mutate grid value to include staged cells
+    const stagedGrid = useMemo(() => {
+        let ret = JSON.parse(JSON.stringify(props.grid));
+        for (let x = 0; x < GRID_SIZE; x++) {
+            for (let y = 0; y < GRID_SIZE; y++) {
+                if (stagedCells[stagedCellKey(x, y)]) {
+                    // We will use 3 and 4 to denote the staged cells, so a staged cell for team 1 will be 3, and a staged cell for team 2 will be 4
+                    ret[x][y] = (playerTeam as number) + 2;
+                } else {
+                    ret[x][y] = props.grid[x][y]
+                }
+            }
+        }
+        return ret;
+    }, [stagedCells, playerTeam])
+
+
     const PrimaryButton = () => {
         if (isDisconnected) {
-            return <Button onClick={openConnectModal}>Connect Wallet</Button>
+            return <Button onClick={() => openConnectModal && openConnectModal()}>Connect Wallet</Button>
         } else if (!playerTeam) {
             return <Button onClick={() => { router.push('/join') }}>Join Team</Button>
         } else {
-            return <Button onClick={() => { router.push('/join') }}>Place 0 {parseInt(playerTeam as string) === RED_TEAM_NUMBER ? 'RED' : 'BLUE'} cells</Button>
+            return <Button onClick={() => { router.push('/join') }}>Place {numStagedChanges} {parseInt(playerTeam as string) === RED_TEAM_NUMBER ? 'RED' : 'BLUE'} cells</Button>
         }
     }
 
     return (
         <>
-            <div className={`center ${styles.pageContainer}`}>
-                <GameBoard grid={props.grid} />
+            <div className={`${styles.pageContainer}`}>
+                <GameBoard grid={stagedGrid} cellClickCB={onCellClick} />
                 <div>
                     <ContentBox>
                         <h1>CELLULAR ENERGY</h1>
@@ -117,14 +148,14 @@ export const getStaticProps: GetStaticProps<GameProps> = async () => {
     })
     const contractConfig = { address: CONTRACT_ADDRESS, abi }
 
-    const currentSeason = (await client.readContract({ ...contractConfig, functionName: 'season' })).toString()
-    const currentGame = (await client.readContract({ ...contractConfig, functionName: 'epoch' })).toString()
-    const currentRound = (await client.readContract({ ...contractConfig, functionName: 'round' })).toString()
-    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [currentSeason, RED_TEAM_NUMBER] })).toString()
-    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [currentSeason, BLUE_TEAM_NUMBER] })).toString()
+    const currentSeason = (await client.readContract({ ...contractConfig, functionName: 'season' }) as bigint).toString()
+    const currentGame = (await client.readContract({ ...contractConfig, functionName: 'epoch' }) as bigint).toString()
+    const currentRound = (await client.readContract({ ...contractConfig, functionName: 'round' }) as bigint).toString()
+    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [currentSeason, RED_TEAM_NUMBER] }) as bigint).toString()
+    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [currentSeason, BLUE_TEAM_NUMBER] }) as bigint).toString()
     const redContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint
     const blueContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint
-    const roundEnd = (await client.readContract({ ...contractConfig, functionName: 'roundEnd' })).toString()
+    const roundEnd = (await client.readContract({ ...contractConfig, functionName: 'roundEnd' }) as bigint).toString()
     const [grid, _] = await constructGridFromContractData(client, CONTRACT_ADDRESS)
 
     return { props: { currentGame, currentRound, currentSeason, redScore, blueScore, grid, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd }, revalidate: 1 }

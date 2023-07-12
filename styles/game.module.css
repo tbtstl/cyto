@@ -1,7 +1,15 @@
 .pageContainer {
     display: flex;
     gap: 3rem;
-    ;
+    margin: auto;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 1rem;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .gameCanvas {
@@ -17,6 +25,22 @@
     grid-template-columns: repeat(64, 1fr);
     grid-template-rows: repeat(64, 1fr);
     grid-gap: 0;
+}
+
+.gameCanvas>.team-1 {
+    background-color: var(--color-blue);
+}
+
+.gameCanvas>.team-2 {
+    background-color: var(--color-red);
+}
+
+.gameCanvas>.team-3 {
+    background-color: var(--color-clearBlue);
+}
+
+.gameCanvas>.team-4 {
+    background-color: var(--color-clearRed);
 }
 
 .gameCanvas>div:hover {
