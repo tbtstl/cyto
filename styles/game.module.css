@@ -21,4 +21,5 @@
 
 .gameCanvas>div:hover {
     background: var(--color-offWhiteDarker);
+    cursor: pointer;
 }

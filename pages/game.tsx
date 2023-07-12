@@ -14,6 +14,7 @@ import { useAccount, useContractRead } from 'wagmi';
 import { useEffect, useState } from 'react';
 import { GameBoard } from '../components/gameBoard';
 import { useInterval } from '../hooks/useInterval';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 interface GameProps {
     currentGame: string,
@@ -29,6 +30,7 @@ interface GameProps {
 export default function Page(props: GameProps) {
     const router = useRouter();
     const { address, isDisconnected } = useAccount()
+    const { openConnectModal } = useConnectModal();
     const [timeToEvolution, setTimeToEvolution] = useState(timeRemaining(parseInt(props.roundEnd)));
     const { data: playerTeam } = useContractRead({
         address: CONTRACT_ADDRESS,
@@ -36,12 +38,6 @@ export default function Page(props: GameProps) {
         functionName: 'playerTeam',
         args: [address, props.currentSeason]
     })
-
-    // useEffect(() => {
-    //     if (isDisconnected) {
-    //         router.push('/')
-    //     }
-    // }, [isDisconnected])
 
     useInterval(() => {
         const updatedTimeToEvolution = timeRemaining(parseInt(props.roundEnd));
@@ -54,6 +50,15 @@ export default function Page(props: GameProps) {
     const tie = BigInt(props.blueScore) === BigInt(props.redScore);
     const teamBlueWinning = BigInt(props.blueScore) > BigInt(props.redScore);
     const price = formatEther(BigInt(props.currentRound) * parseEther('0.0001'));
+    const PrimaryButton = () => {
+        if (isDisconnected) {
+            return <Button onClick={openConnectModal}>Connect Wallet</Button>
+        } else if (!playerTeam) {
+            return <Button onClick={() => { router.push('/join') }}>Join Team</Button>
+        } else {
+            return <Button onClick={() => { router.push('/join') }}>Place 0 {parseInt(playerTeam as string) === RED_TEAM_NUMBER ? 'RED' : 'BLUE'} cells</Button>
+        }
+    }
 
     return (
         <>
@@ -82,11 +87,7 @@ export default function Page(props: GameProps) {
                         </p>
                     </ContentBox>
                     <FooterButtons>
-                        {!playerTeam ? (
-                            <Button onClick={() => { router.push('/join') }}>Join Team</Button>
-                        ) : (
-                            <Button onClick={() => { router.push('/join') }}>Place 0 {parseInt(playerTeam as string) === RED_TEAM_NUMBER ? 'RED' : 'BLUE'} cells</Button>
-                        )}
+                        <PrimaryButton />
                         <Button onClick={() => { router.push('/how-to-play') }}>How to Play</Button>
                     </FooterButtons>
                 </div>
