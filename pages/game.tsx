@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useRouter } from 'next/router'
 import styles from '../styles/game.module.css'
 import { createPublicClient, formatEther, http, parseEther } from 'viem';
-import { USE_MAINNET, CONTRACT_ADDRESS, RED_TEAM_NUMBER, BLUE_TEAM_NUMBER } from '../constants/utils'
+import { USE_MAINNET, CONTRACT_ADDRESS, RED_TEAM_NUMBER, BLUE_TEAM_NUMBER, GRID_SIZE, constructGridFromContractData } from '../constants/utils'
 import { zora, zoraTestnet } from 'viem/chains';
 import abi from '../constants/abi.json'
 import { ContentBox } from '../components/contentBox'
@@ -21,6 +21,7 @@ interface GameProps {
     currentSeason: string,
     redScore: string,
     blueScore: string,
+    grid: number[][],
     prizePool: string
     roundEnd: string
 }
@@ -36,11 +37,11 @@ export default function Page(props: GameProps) {
         args: [address, props.currentSeason]
     })
 
-    useEffect(() => {
-        if (isDisconnected) {
-            router.push('/')
-        }
-    }, [isDisconnected])
+    // useEffect(() => {
+    //     if (isDisconnected) {
+    //         router.push('/')
+    //     }
+    // }, [isDisconnected])
 
     useInterval(() => {
         const updatedTimeToEvolution = timeRemaining(parseInt(props.roundEnd));
@@ -57,7 +58,7 @@ export default function Page(props: GameProps) {
     return (
         <>
             <div className={`center ${styles.pageContainer}`}>
-                <GameBoard />
+                <GameBoard grid={props.grid} />
                 <div>
                     <ContentBox>
                         <h1>CELLULAR ENERGY</h1>
@@ -123,7 +124,7 @@ export const getStaticProps: GetStaticProps<GameProps> = async () => {
     const redContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint
     const blueContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint
     const roundEnd = (await client.readContract({ ...contractConfig, functionName: 'roundEnd' })).toString()
+    const [grid, _] = await constructGridFromContractData(client, CONTRACT_ADDRESS)
 
-
-    return { props: { currentGame, currentRound, currentSeason, redScore, blueScore, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd }, revalidate: 1 }
+    return { props: { currentGame, currentRound, currentSeason, redScore, blueScore, grid, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd }, revalidate: 1 }
 }

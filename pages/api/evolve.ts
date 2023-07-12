@@ -9,7 +9,7 @@ import axios from 'axios'
 import { groth16 } from 'snarkjs';
 import fs from 'fs';
 import abi from '../../constants/abi.json';
-import { USE_MAINNET, GRID_SIZE, CELL_SIZE_BITS, MAX_CELL_VALUE, CONTRACT_ADDRESS } from '../../constants/utils'
+import { USE_MAINNET, GRID_SIZE, CELL_SIZE_BITS, MAX_CELL_VALUE, CONTRACT_ADDRESS, constructGridFromContractData } from '../../constants/utils'
 
 
 const VERIFICATION_KEY = 'verification_key.json'
@@ -102,28 +102,6 @@ async function handleEvolveBoardRequest() {
 
         console.log('board evolved!')
     }
-}
-
-async function constructGridFromContractData(client, contractAddress) {
-    const grid: number[][] = Array.from(Array(GRID_SIZE), () => [...Array(GRID_SIZE).fill(0)]);
-    const rowInputs: BigInt[] = [];
-    for (let i = 0; i < GRID_SIZE; i++) {
-        const rowHex = await client.readContract({
-            address: contractAddress,
-            abi,
-            functionName: 'board',
-            args: [i]
-        }) as `0x${string}`;
-        const rowBigInt = hexToBigInt(rowHex);
-        rowInputs.push(rowBigInt);
-        for (let j = 0; j < GRID_SIZE; j++) {
-            const bitPosition = (GRID_SIZE - 1 - j) * CELL_SIZE_BITS;
-            const bitMask = BigInt(MAX_CELL_VALUE) << BigInt(bitPosition);
-
-            grid[i][j] = parseInt(((rowBigInt & bitMask) >> BigInt(bitPosition)).toString());
-        }
-    }
-    return [grid, rowInputs];
 }
 
 function generateGameOfLifeOutput(grid: number[][]) {

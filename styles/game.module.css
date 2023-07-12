@@ -11,6 +11,14 @@
     height: 40rem;
     flex-shrink: 0;
     border: 1px solid #000;
-    background: #EEE;
+    background: var(--color-offwhite);
     box-shadow: 4px 4px 0px 0px #000;
+    display: grid;
+    grid-template-columns: repeat(64, 1fr);
+    grid-template-rows: repeat(64, 1fr);
+    grid-gap: 0;
+}
+
+.gameCanvas>div:hover {
+    background: var(--color-offWhiteDarker);
 }
