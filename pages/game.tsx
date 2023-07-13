@@ -78,7 +78,7 @@ export default function Page(props: GameProps) {
     const price = formatEther(BigInt(props.currentGame) * parseEther('0.0001'));
 
     const onCellClick = useCallback((x: number, y: number) => {
-        if (!playerTeam) { return }
+        if (!playerTeam || props.grid[x][y] !== 0) { return }
         setStagedCells({ ...stagedCells, [stagedCellKey(x, y)]: !stagedCells[stagedCellKey(x, y)] })
     }, [stagedCells, setStagedCells, playerTeam])
 
@@ -174,8 +174,8 @@ export const getStaticProps: GetStaticProps<GameProps> = async () => {
     const currentSeason = (await client.readContract({ ...contractConfig, functionName: 'season' }) as bigint).toString()
     const currentGame = (await client.readContract({ ...contractConfig, functionName: 'epoch' }) as bigint).toString()
     const currentRound = (await client.readContract({ ...contractConfig, functionName: 'round' }) as bigint).toString()
-    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [currentSeason, RED_TEAM_NUMBER] }) as bigint).toString()
-    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [currentSeason, BLUE_TEAM_NUMBER] }) as bigint).toString()
+    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint).toString()
+    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint).toString()
     const redContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint
     const blueContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint
     const roundEnd = (await client.readContract({ ...contractConfig, functionName: 'roundEnd' }) as bigint).toString()
