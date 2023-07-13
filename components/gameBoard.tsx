@@ -16,6 +16,6 @@ export function GameBoard({ grid, cellClickCB }: { grid: number[][], cellClickCB
 
 function Cell({ x, y, value, cb }: { x: number, y: number, value: number, cb: (x: number, y: number) => void }) {
     return (
-        <div className={styles[`team-${value.toString()}`]} onClick={() => cb(x, y)} />
+        <div className={styles[`team-${value.toString() || 0}`]} onClick={() => cb(x, y)} />
     )
 }

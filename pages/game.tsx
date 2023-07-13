@@ -15,6 +15,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GameBoard } from '../components/gameBoard';
 import { useInterval } from '../hooks/useInterval';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { usePrepareContractWrite, useContractWrite } from 'wagmi'
+
 
 interface GameProps {
     currentGame: string,
@@ -30,6 +32,7 @@ interface GameProps {
 type StagedCellKey = `${number}-${number}`
 type StagedCellMapping = { [key: StagedCellKey]: boolean }
 const stagedCellKey = (x: number, y: number) => `${x}-${y}` as StagedCellKey
+const gamePrice = (stagedChanges: number, game: number) => parseEther('0.001') * (BigInt(stagedChanges)) * BigInt(game)
 
 
 export default function Page(props: GameProps) {
@@ -45,6 +48,22 @@ export default function Page(props: GameProps) {
     })
     const [stagedCells, setStagedCells] = useState<StagedCellMapping>({})
     const numStagedChanges = useMemo(() => Object.keys(stagedCells).filter((k) => !!stagedCells[k as StagedCellKey]).length, [stagedCells]);
+    const stagedCellsArgs = useMemo(() => {
+        return Object.keys(stagedCells).filter((k) => !!stagedCells[k as StagedCellKey]).map((k) => {
+            const [x, y] = k.split('-').map((n) => parseInt(n))
+            return [x, y]
+        })
+    }, [stagedCells])
+    const { config, error } = usePrepareContractWrite({
+        address: CONTRACT_ADDRESS,
+        abi: abi,
+        functionName: 'injectCells',
+        value: gamePrice(numStagedChanges, parseInt(props.currentGame)),
+        args: [stagedCellsArgs]
+    })
+    const { data, isLoading, isSuccess, write } = useContractWrite(config)
+
+
 
     useInterval(() => {
         const updatedTimeToEvolution = timeRemaining(parseInt(props.roundEnd));
@@ -56,7 +75,7 @@ export default function Page(props: GameProps) {
 
     const tie = BigInt(props.blueScore) === BigInt(props.redScore);
     const teamBlueWinning = BigInt(props.blueScore) > BigInt(props.redScore);
-    const price = formatEther(BigInt(props.currentRound) * parseEther('0.0001'));
+    const price = formatEther(BigInt(props.currentGame) * parseEther('0.0001'));
 
     const onCellClick = useCallback((x: number, y: number) => {
         if (!playerTeam) { return }
@@ -86,8 +105,12 @@ export default function Page(props: GameProps) {
             return <Button onClick={() => openConnectModal && openConnectModal()}>Connect Wallet</Button>
         } else if (!playerTeam) {
             return <Button onClick={() => { router.push('/join') }}>Join Team</Button>
+        } else if (isLoading) {
+            return <Button onClick={() => { }}>Confirm in Wallet</Button>
+        } else if (isSuccess) {
+            return <Button onClick={() => { }}>Success!</Button>
         } else {
-            return <Button onClick={() => { router.push('/join') }}>Place {numStagedChanges} {parseInt(playerTeam as string) === RED_TEAM_NUMBER ? 'RED' : 'BLUE'} cells</Button>
+            return <Button onClick={() => { write && write() }}>Place {numStagedChanges} {parseInt(playerTeam as string) === RED_TEAM_NUMBER ? 'RED' : 'BLUE'} cells</Button>
         }
     }
 

@@ -486,6 +486,19 @@
     {
         "inputs": [
             {
+                "internalType": "uint8[2][]",
+                "name": "_cells",
+                "type": "uint8[2][]"
+            }
+        ],
+        "name": "injectCells",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "uint8",
                 "name": "team",
                 "type": "uint8"
