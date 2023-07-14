@@ -132,7 +132,7 @@ template GetCellValue(Width, Height, x, y) {
 
     component teamACount = FilteredNeighborCount(1);
     component teamBCount = FilteredNeighborCount(2);
-    component teamCountCompare = GreaterThan(2);
+    component teamCountCompare = GreaterThan(3);
     teamACount.in <== neighbors;
     teamBCount.in <== neighbors;
     teamCountCompare.in[0] <== teamACount.out;
