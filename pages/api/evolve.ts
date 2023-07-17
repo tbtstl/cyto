@@ -15,7 +15,7 @@ import { USE_MAINNET, GRID_SIZE, CELL_SIZE_BITS, MAX_CELL_VALUE, CONTRACT_ADDRES
 const VERIFICATION_KEY = 'verification_key.json'
 const CIRCUIT_KEY = 'circuit_final.zkey'
 const CIRCUIT_WASM = 'circuit.wasm'
-const INPUT_FN = 'snarKInput.json'
+const INPUT_FN = 'snarkInput.json'
 const PROOF_FN = 'proof.json'
 const PUBLIC_FN = 'public.json'
 const execAsync = promisify(exec);

@@ -122,7 +122,7 @@ export default function Page(props: GameProps) {
                     <ContentBox>
                         <h1>CELLULAR ENERGY</h1>
                         <p>
-                            This is game <b>{props.currentGame}</b> of <b>7</b>.<br />
+                            This is game <b>{props.currentGame}</b> of <b>7</b>, round <b>{props.currentRound}</b> of <b>96</b>.<br />
                             <span className="blue"><b>Team Blue</b></span>&nbsp;{!tie && teamBlueWinning ? 'is currently winning with ' : 'currently has '} <b>{props.blueScore} points</b>.<br />
                             <span className="red"><b>Team Red</b></span>&nbsp;{!tie && !teamBlueWinning ? 'is currently winning with ' : 'currently has'} <b>{props.redScore} points</b>.<br />
                         </p>

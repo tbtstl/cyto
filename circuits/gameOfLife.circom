@@ -3,6 +3,7 @@ pragma circom 2.1.6;
 
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/gates.circom";
+include "../node_modules/circomlib/circuits/switcher.circom";
 
 template IsCellValueAlive() {
     signal input in;
@@ -96,6 +97,13 @@ template GetCellValue(Width, Height, x, y) {
     neighbors[6] <== bottom;
     neighbors[7] <== bottomLeft;
 
+
+    if(x < 10 && y < 5) {
+        log("raw values of (", x, y, ")");
+        log(left, topLeft, top, topRight, right, bottomRight, bottom, bottomLeft);
+        log("self", in[x][y]);
+    }
+
     component leftAlive = IsCellValueAlive();
     leftAlive.in <== left;
     component topLeftAlive = IsCellValueAlive();
@@ -123,6 +131,11 @@ template GetCellValue(Width, Height, x, y) {
     liveNeighborCount.in[5] <== bottomRightAlive.out;
     liveNeighborCount.in[6] <== bottomAlive.out;
     liveNeighborCount.in[7] <== bottomLeftAlive.out;
+    
+    if(x < 10 && y < 5) {
+        log("live neighbors");
+        log("The live neighbor count of (", x, y, ") is: ", liveNeighborCount.out);
+    }
 
     component stablePopulation = IsStablePopulation();
     stablePopulation.in <== liveNeighborCount.out;
@@ -132,7 +145,7 @@ template GetCellValue(Width, Height, x, y) {
 
     component teamACount = FilteredNeighborCount(1);
     component teamBCount = FilteredNeighborCount(2);
-    component teamCountCompare = GreaterThan(3);
+    component teamCountCompare = GreaterThan(4);
     teamACount.in <== neighbors;
     teamBCount.in <== neighbors;
     teamCountCompare.in[0] <== teamACount.out;
@@ -145,8 +158,21 @@ template GetCellValue(Width, Height, x, y) {
     // growth value is 2 (team B) if A is less than B, and 1 if A is greater than B
     growthValue <== growingPopulation.out * (2 - teamCountCompare.out);
 
+    // This component returns the current cell value if it is alive, or the growth value otherwise.
+    // If the cell is not a growth value, it will return 0 regardless.
+    component cellValueOrGrowthValue = Switcher();
+    cellValueOrGrowthValue.sel <== cellIsZero.out;
+    cellValueOrGrowthValue.L <== in[x][y] * growingPopulation.out;
+    cellValueOrGrowthValue.R <== growthValue;
+
+    if(x < 10 && y < 5) {
+        log("output of (", x, y, "): ", (stablePopulation.out * in[x][y]) + cellValueOrGrowthValue.outL);
+
+        // log("The live neighbor count of (", x, y, ") is: ", liveNeighborCount.out);
+    }
+
     // return the current value if a stable population, or the growth value if a growing population (0 if overpopulated)
-    out <== (stablePopulation.out * in[x][y]) + growthValue;
+    out <== (stablePopulation.out * in[x][y]) + cellValueOrGrowthValue.outL;
 }
 
 template GameOfLife(Width, Height) {

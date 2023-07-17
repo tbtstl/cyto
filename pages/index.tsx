@@ -63,8 +63,8 @@ export const getStaticProps: GetStaticProps<GameStats> = async () => {
 
     const currentSeason = (await client.readContract({ ...contractConfig, functionName: 'season' }) as bigint).toString()
     const currentGame = (await client.readContract({ ...contractConfig, functionName: 'epoch' }) as bigint).toString()
-    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [currentSeason, RED_TEAM_NUMBER] }) as bigint).toString()
-    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [currentSeason, BLUE_TEAM_NUMBER] }) as bigint).toString()
+    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint).toString()
+    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint).toString()
     const redContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint
     const blueContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint
 
