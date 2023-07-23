@@ -5,12 +5,12 @@ VERIFICATION_KEY_LOCAL_PATH="verification_key.json"
 CIRCUIT_KEY_LOCAL_PATH="circuit_final.zkey"
 CIRCUIT_WASM_LOCAL_PATH="circuit.wasm"
 
-echo "Downloading verification key..."
+echo "Downloading verification key from $VERIFICATION_KEY_URL"
 curl -o $VERIFICATION_KEY_LOCAL_PATH $VERIFICATION_KEY_URL;
 echo "Downloaded verification key to $VERIFICATION_KEY_LOCAL_PATH"
 
 echo "Downloading circuit key..."
-curl -o $CIRCUIT_KEY_LOCAL_PATH $CIRCUIT_KEY_URL;
+curl -o $CIRCUIT_KEY_LOCAL_PATH $ZKEY_URL;
 echo "Downloaded circuit key to $CIRCUIT_KEY_LOCAL_PATH"
 
 echo "Downloading circuit wasm..."
