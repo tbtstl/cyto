@@ -1,5 +1,5 @@
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { createWalletClient, hexToBigInt, http, publicActions } from 'viem'
@@ -20,9 +20,10 @@ const PROOF_FN = 'proof.json'
 const PUBLIC_FN = 'public.json'
 const execAsync = promisify(exec);
 
-export default async function handler(req, res) {
+export default async function handler(req: NextRequest, res: NextResponse<{ evolvedBoard: boolean }>) {
     const evolvedBoard = await handleEvolveBoardRequest()
 
+    // @ts-ignore
     return res.json({ evolvedBoard })
 }
 
@@ -97,7 +98,7 @@ async function handleEvolveBoardRequest() {
             args
         })
         await client.writeContract(request)
-
+        return true;
         console.log('board evolved!')
     }
 }
@@ -124,6 +125,7 @@ function generateGameOfLifeOutput(grid: number[][]) {
     // Use the new computed grid to return the encoded output, an array of uint128 values;
     const outputBigInts: BigInt[] = []
     for (let i = 0; i < GRID_SIZE; i++) {
+        // @ts-ignore TODO: fix tsconfig to allow bigint literals
         outputBigInts.push(0n);
         for (let j = 0; j < GRID_SIZE; j++) {
             const bitPosition = (GRID_SIZE - 1 - j) * CELL_SIZE_BITS;
@@ -141,7 +143,7 @@ function generateGameOfLifeOutput(grid: number[][]) {
     return outputBigInts;
 }
 
-function getNeighbors(grid, x, y) {
+function getNeighbors(grid: number[][], x: number, y: number) {
     const neighbors: number[] = [];
     for (let i = x - 1; i <= x + 1; i++) {
         if (i < 0 || i >= GRID_SIZE) {

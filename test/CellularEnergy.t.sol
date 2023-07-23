@@ -293,7 +293,7 @@ contract CellularEnergyTest is Test {
         game.injectCell{value: 999999999999999}(0, 0);
     }
 
-    function xtestClaimSeasonRewards() public {
+    function testClaimSeasonRewards() public {
         // Make sure the points get counted
         setFirstRound();
         vm.warp(game.roundEnd());

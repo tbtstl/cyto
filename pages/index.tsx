@@ -44,7 +44,7 @@ export default function Page(gameStats: GameStats) {
                 <p>Connect to ZORA to join the game.</p>
             </ContentBox>
             <FooterButtons>
-                <Button onClick={() => address ? router.push('/game') : openConnectModal()}>
+                <Button onClick={() => address ? router.push('/game') : openConnectModal && openConnectModal()}>
                     {address ? 'Play Game' : 'Connect to ZORA'}
                 </Button>
                 <Button onClick={() => { router.push('/how-to-play') }}>How to Play</Button>

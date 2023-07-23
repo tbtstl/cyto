@@ -5,9 +5,5 @@ module.exports = {
             'bufferutil': 'commonjs bufferutil',
         })
         return config
-    },
-    experimental: {
-        serverActions: true,
-    },
-
+    }
 }

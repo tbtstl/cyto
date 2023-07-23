@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { Ref, useEffect, useRef } from "react";
 
-const useAsyncEffect = (effect, dependencies) => {
+const useAsyncEffect = (effect: (ref: Ref<boolean>) => void, dependencies: any[]) => {
     const mountedRef = useRef(true);
 
     useEffect(() => {

@@ -1,4 +1,5 @@
 {
+    "buildCommand": "yarn build:fe && ",
     "crons": [
         {
             "path": "/api/evolve",
