@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createWalletClient, http, publicActions } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { zora, zoraTestnet } from 'viem/chains';
-import axios from 'axios'
+import path from 'path'
 import { groth16 } from 'snarkjs';
 import fs from 'fs';
 import abi from '../../constants/abi.json';
@@ -21,6 +21,7 @@ export default async function handler(req: NextRequest, res: NextResponse<{ evol
     return res.json({ evolvedBoard })
 }
 
+const pathTo = (fn: string) => path.join(__dirname, fn)
 
 async function handleEvolveBoardRequest() {
     const account = privateKeyToAccount(process.env.CELLULAR_ENERGY_VERIFIER_PK as `0x${string}`);
@@ -57,6 +58,8 @@ async function handleEvolveBoardRequest() {
             current: rowInputs.map(i => i.toString()),
             next: rowOutputs.map(i => i.toString())
         }
+
+        console.log(fs.readdirSync(path.join(__dirname)));
 
         // use snarkjs to generate and verify the proof
         console.log('generating proof...')
@@ -149,23 +152,13 @@ function getNeighbors(grid: number[][], x: number, y: number) {
     return neighbors.filter(n => n !== 0);
 }
 
-const downloadFile = async (url: string, name: string) => {
-    const response = await axios.get(url, { responseType: 'stream' });
-    const fileStream = response.data.pipe(fs.createWriteStream(name, { autoClose: true }));
-    await new Promise((resolve, reject) => {
-        fileStream.on('finish', resolve);
-        fileStream.on('error', reject);
-    });
-    console.log(`${name} downloaded successfully`);
-}
-
 async function generateProof(input: { current: string[], next: string[] }) {
-    const { proof, publicSignals } = await groth16.fullProve(input, CIRCUIT_WASM, CIRCUIT_KEY);
+    const { proof, publicSignals } = await groth16.fullProve(input, pathTo(CIRCUIT_WASM), pathTo(CIRCUIT_KEY));
     return { proof, publicSignals }
 }
 
 async function verifyProof(proof: string, publicSignals: string) {
-    const verifier = JSON.parse(fs.readFileSync(VERIFICATION_KEY, 'utf8'));
+    const verifier = JSON.parse(fs.readFileSync(pathTo(VERIFICATION_KEY), 'utf8'));
     const verified = await groth16.verify(verifier, publicSignals, proof);
     console.log({ verified })
     if (!verified) {
