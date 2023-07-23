@@ -27,6 +27,8 @@ interface GameProps {
     grid: number[][],
     prizePool: string
     roundEnd: string
+    redContributions: string,
+    blueContributions: string
 }
 
 type StagedCellKey = `${number}-${number}`
@@ -61,8 +63,16 @@ export default function Page(props: GameProps) {
         value: gamePrice(numStagedChanges, parseInt(props.currentGame)),
         args: [stagedCellsArgs]
     })
-    const { data, isLoading, isSuccess, write } = useContractWrite(config)
+    const { isLoading, isSuccess, write } = useContractWrite(config)
+    const { data: playerContributions } = useContractRead({ address: CONTRACT_ADDRESS, abi, functionName: 'playerContributions', args: [address, props.currentSeason] })
 
+    const contributionPercentage = useMemo(() => {
+        if (playerContributions && playerTeam) {
+            return playerTeam === RED_TEAM_NUMBER ? (parseInt(playerContributions.toString()) / (parseInt(props.redContributions)) * 100) : (parseInt(playerContributions.toString()) / (parseInt(props.blueContributions)) * 100)
+        } else {
+            return null
+        }
+    }, [playerContributions])
 
 
     useInterval(() => {
@@ -138,6 +148,9 @@ export default function Page(props: GameProps) {
                         <p>
                             The current cost to place a cell is <b>{price} ETH</b>.<br />
                             The current prize pool is <b>{formatEther(BigInt(props.prizePool))} ETH</b>.
+                            {contributionPercentage && (
+                                <><br />You've contributed <b>{contributionPercentage}%</b> to your team's prize pool.</>
+                            )}
                         </p>
                     </ContentBox>
                     <FooterButtons>
@@ -181,5 +194,5 @@ export const getStaticProps: GetStaticProps<GameProps> = async () => {
     const roundEnd = (await client.readContract({ ...contractConfig, functionName: 'roundEnd' }) as bigint).toString()
     const [grid, _] = await constructGridFromContractData(client, CONTRACT_ADDRESS)
 
-    return { props: { currentGame, currentRound, currentSeason, redScore, blueScore, grid, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd }, revalidate: 1 }
+    return { props: { currentGame, currentRound, currentSeason, redScore, blueScore, grid, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd, redContributions: redContributions.toString(), blueContributions: blueContributions.toString() }, revalidate: 1 }
 }
