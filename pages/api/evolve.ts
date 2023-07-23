@@ -183,7 +183,7 @@ const downloadFile = async (url: string, name: string) => {
 }
 
 async function generateProof() {
-    const command = `snarkjs groth16 fullprove ${INPUT_FN} ${CIRCUIT_WASM} ${CIRCUIT_KEY} ${PROOF_FN} ${PUBLIC_FN}`
+    const command = `npx snarkjs groth16 fullprove ${INPUT_FN} ${CIRCUIT_WASM} ${CIRCUIT_KEY} ${PROOF_FN} ${PUBLIC_FN}`
     const { stdout, stderr } = await execAsync(command);
     console.log(stdout)
     if (stderr) {
@@ -192,7 +192,7 @@ async function generateProof() {
 }
 
 async function verifyProof() {
-    const command = `snarkjs groth16 verify ${VERIFICATION_KEY} ${PUBLIC_FN} ${PROOF_FN}`
+    const command = `npx snarkjs groth16 verify ${VERIFICATION_KEY} ${PUBLIC_FN} ${PROOF_FN}`
     const { stdout, stderr } = await execAsync(command);
     console.log(stdout)
     if (stderr) {
