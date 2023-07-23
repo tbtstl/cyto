@@ -1,5 +1,5 @@
 {
-    "buildCommand": "yarn build:fe && ",
+    "buildCommand": "yarn build:fe && chmod +x ./scripts/downloadSnarkFiles.sh && ./scripts/downloadSnarkFiles.sh",
     "crons": [
         {
             "path": "/api/evolve",
