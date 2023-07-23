@@ -7,8 +7,8 @@
         }
     ],
     "functions": {
-        "pages/api/evolve": {
-            "includeFiles": ".next/server/**/*"
+        "pages/api/evolve.ts": {
+            "memory": 3008
         }
     }
 }
