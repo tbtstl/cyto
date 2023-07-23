@@ -243,8 +243,6 @@ contract CellularEnergyTest is Test {
         vm.prank(player1);
         game.injectCell{value: 1000000000000000}(x, y);
 
-        console.log(team, game.getValueAtPosition(x, y));
-
         assertEq(team, game.getValueAtPosition(x, y));
         assertEq(game.playerContributions(player1, game.season()), price - maintenanceFee);
         assertEq(game.teamContributions(team, game.season()), price - maintenanceFee);

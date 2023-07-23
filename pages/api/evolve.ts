@@ -36,7 +36,6 @@ async function handleEvolveBoardRequest() {
     }).extend(publicActions)
     let evolvedBoard = false
 
-    console.log({ CONTRACT_ADDRESS })
 
     // First, check the time remaining in the round
     const roundEnd = await client.readContract({
@@ -46,7 +45,6 @@ async function handleEvolveBoardRequest() {
     }) as BigInt
 
     // If the game is still playable, no action is needed. 
-    console.log(roundEnd.toString(), Date.now() / 1000)
     if (parseInt(roundEnd.toString()) > Date.now() / 1000) {
         console.log(`game is still playable for ${parseInt(roundEnd.toString()) - Date.now() / 1000} seconds`)
         return evolvedBoard
