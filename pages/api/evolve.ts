@@ -8,11 +8,12 @@ import { groth16 } from 'snarkjs';
 import fs from 'fs';
 import abi from '../../constants/abi.json';
 import { USE_MAINNET, GRID_SIZE, CELL_SIZE_BITS, MAX_CELL_VALUE, CONTRACT_ADDRESS, constructGridFromContractData } from '../../constants/utils'
+import axios from 'axios';
 
 
-const VERIFICATION_KEY = 'verification_key.json'
-const CIRCUIT_KEY = 'circuit_final.zkey'
-const CIRCUIT_WASM = 'circuit.wasm'
+const VERIFICATION_KEY = '/tmp/verification_key.json'
+const CIRCUIT_KEY = '/tmp/circuit_final.zkey'
+const CIRCUIT_WASM = '/tmp/circuit.wasm'
 
 export default async function handler(req: NextRequest, res: NextResponse<{ evolvedBoard: boolean }>) {
     const evolvedBoard = await handleEvolveBoardRequest()
@@ -21,7 +22,7 @@ export default async function handler(req: NextRequest, res: NextResponse<{ evol
     return res.json({ evolvedBoard })
 }
 
-const pathTo = (fn: string) => path.join(__dirname, fn)
+const pathTo = (fn: string) => fn
 
 async function handleEvolveBoardRequest() {
     const account = privateKeyToAccount(process.env.CELLULAR_ENERGY_VERIFIER_PK as `0x${string}`);
@@ -52,6 +53,9 @@ async function handleEvolveBoardRequest() {
         console.log('generating output...')
         const rowOutputs = generateGameOfLifeOutput(grid as number[][]);
 
+        console.log('downloading keys')
+        await downloadSnarkFiles();
+
         // create the input JSON for snarkjs
         // console.log('writing snark input...')
         const snarkInput = {
@@ -70,7 +74,6 @@ async function handleEvolveBoardRequest() {
 
         console.log('generating calldata...')
         const rawCalldata = await groth16.exportSolidityCallData(proof, publicSignals);
-        fs.writeFileSync('calldata.txt', rawCalldata);
         // snarkjs gives us a very unparsable output that we need to hand parse
         const calldataRegex = /(\[.+\]),(\[\[.+\]\]),(\[.*\]),(\[.*\])/;
         const calldata = rawCalldata.match(calldataRegex);
@@ -88,8 +91,8 @@ async function handleEvolveBoardRequest() {
             args
         })
         await client.writeContract(request)
-        return true;
         console.log('board evolved!')
+        return true;
     }
 }
 
@@ -164,4 +167,26 @@ async function verifyProof(proof: string, publicSignals: string) {
     if (!verified) {
         console.error(`Proof not verified!`);
     }
+}
+
+async function downloadSnarkFiles() {
+    const verificationKeyURL = process.env.VERIFICATION_KEY_URL as string
+    const zkeyURL = process.env.ZKEY_URL as string
+    const circuitWasmURL = process.env.CIRCUIT_WASM_URL as string
+
+
+    // TODO: Promise.all and run these all in parallel
+    await downloadFile(verificationKeyURL, VERIFICATION_KEY)
+    await downloadFile(zkeyURL, CIRCUIT_KEY)
+    await downloadFile(circuitWasmURL, CIRCUIT_WASM)
+}
+
+const downloadFile = async (url: string, name: string) => {
+    const response = await axios.get(url, { responseType: 'stream' });
+    const fileStream = response.data.pipe(fs.createWriteStream(name, { autoClose: true }));
+    await new Promise((resolve, reject) => {
+        fileStream.on('finish', resolve);
+        fileStream.on('error', reject);
+    });
+    console.log(`${name} downloaded successfully`);
 }
