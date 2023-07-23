@@ -1,8 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
-import { createWalletClient, hexToBigInt, http, publicActions } from 'viem'
+import { createWalletClient, http, publicActions } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { zora, zoraTestnet } from 'viem/chains';
 import axios from 'axios'
@@ -15,10 +13,6 @@ import { USE_MAINNET, GRID_SIZE, CELL_SIZE_BITS, MAX_CELL_VALUE, CONTRACT_ADDRES
 const VERIFICATION_KEY = 'verification_key.json'
 const CIRCUIT_KEY = 'circuit_final.zkey'
 const CIRCUIT_WASM = 'circuit.wasm'
-const INPUT_FN = '/tmp/snarkInput.json'
-const PROOF_FN = '/tmp/proof.json'
-const PUBLIC_FN = '/tmp/public.json'
-const execAsync = promisify(exec);
 
 export default async function handler(req: NextRequest, res: NextResponse<{ evolvedBoard: boolean }>) {
     const evolvedBoard = await handleEvolveBoardRequest()
@@ -58,28 +52,21 @@ async function handleEvolveBoardRequest() {
         const rowOutputs = generateGameOfLifeOutput(grid as number[][]);
 
         // create the input JSON for snarkjs
-        console.log('writing snark input...')
+        // console.log('writing snark input...')
         const snarkInput = {
             current: rowInputs.map(i => i.toString()),
             next: rowOutputs.map(i => i.toString())
         }
-        fs.writeFileSync(INPUT_FN, JSON.stringify(snarkInput))
-
-        // download the vkey for the proof
-        // TODO: see if I can cache this in build
-        // await downloadSnarkFiles();
 
         // use snarkjs to generate and verify the proof
         console.log('generating proof...')
-        await generateProof();
+        const { proof, publicSignals } = await generateProof(snarkInput);
 
         console.log('verifying proof...')
-        await verifyProof();
+        await verifyProof(proof, publicSignals);
 
         console.log('generating calldata...')
-        const proof = JSON.parse(await fs.readFileSync(PROOF_FN, 'utf8'));
-        const pub = JSON.parse(await fs.readFileSync(PUBLIC_FN, 'utf8'));
-        const rawCalldata = await groth16.exportSolidityCallData(proof, pub);
+        const rawCalldata = await groth16.exportSolidityCallData(proof, publicSignals);
         fs.writeFileSync('calldata.txt', rawCalldata);
         // snarkjs gives us a very unparsable output that we need to hand parse
         const calldataRegex = /(\[.+\]),(\[\[.+\]\]),(\[.*\]),(\[.*\])/;
@@ -162,16 +149,6 @@ function getNeighbors(grid: number[][], x: number, y: number) {
     return neighbors.filter(n => n !== 0);
 }
 
-async function downloadSnarkFiles() {
-    const verificationKeyURL = process.env.VERFICATION_KEY_URL as string
-    const zkeyURL = process.env.ZKEY_URL as string
-    const circuitWasmURL = process.env.CIRCUIT_WASM_URL as string
-
-    await downloadFile(verificationKeyURL, VERIFICATION_KEY)
-    await downloadFile(zkeyURL, CIRCUIT_KEY)
-    await downloadFile(circuitWasmURL, CIRCUIT_WASM)
-}
-
 const downloadFile = async (url: string, name: string) => {
     const response = await axios.get(url, { responseType: 'stream' });
     const fileStream = response.data.pipe(fs.createWriteStream(name, { autoClose: true }));
@@ -182,20 +159,16 @@ const downloadFile = async (url: string, name: string) => {
     console.log(`${name} downloaded successfully`);
 }
 
-async function generateProof() {
-    const command = `npx snarkjs groth16 fullprove ${INPUT_FN} ${CIRCUIT_WASM} ${CIRCUIT_KEY} ${PROOF_FN} ${PUBLIC_FN}`
-    const { stdout, stderr } = await execAsync(command);
-    console.log(stdout)
-    if (stderr) {
-        console.error(`Command stderr: ${stderr}`);
-    }
+async function generateProof(input: { current: string[], next: string[] }) {
+    const { proof, publicSignals } = await groth16.fullProve(input, CIRCUIT_WASM, CIRCUIT_KEY);
+    return { proof, publicSignals }
 }
 
-async function verifyProof() {
-    const command = `npx snarkjs groth16 verify ${VERIFICATION_KEY} ${PUBLIC_FN} ${PROOF_FN}`
-    const { stdout, stderr } = await execAsync(command);
-    console.log(stdout)
-    if (stderr) {
-        console.error(`Command stderr: ${stderr}`);
+async function verifyProof(proof: string, publicSignals: string) {
+    const verifier = JSON.parse(fs.readFileSync(VERIFICATION_KEY, 'utf8'));
+    const verified = await groth16.verify(verifier, publicSignals, proof);
+    console.log({ verified })
+    if (!verified) {
+        console.error(`Proof not verified!`);
     }
 }
