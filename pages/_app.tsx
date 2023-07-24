@@ -18,7 +18,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 const { connectors } = getDefaultWallets({ appName: 'CELLULAR ENERGY', projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID as string, chains })
 
 const config = createConfig({
-    autoConnect: false,
+    autoConnect: true,
     connectors,
     publicClient,
     webSocketPublicClient
