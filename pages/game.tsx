@@ -91,7 +91,7 @@ export default function Page(props: GameProps) {
         })
         const [grid, _] = await constructGridFromContractData(client, CONTRACT_ADDRESS);
         setLatestFetchedGrid(grid)
-    }, 5000);
+    }, 30000);
 
     const tie = BigInt(props.blueScore) === BigInt(props.redScore);
     const teamBlueWinning = BigInt(props.blueScore) > BigInt(props.redScore);
