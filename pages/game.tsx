@@ -11,7 +11,7 @@ import { FooterButtons } from '../components/footerButtons';
 import { Button } from '../components/button';
 import { GetStaticProps } from 'next';
 import { useAccount, useContractRead } from 'wagmi';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { GameBoard } from '../components/gameBoard';
 import { useInterval } from '../hooks/useInterval';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
@@ -65,6 +65,7 @@ export default function Page(props: GameProps) {
     })
     const { isLoading, isSuccess, write } = useContractWrite(config)
     const { data: playerContributions } = useContractRead({ address: CONTRACT_ADDRESS, abi, functionName: 'playerContributions', args: [address, props.currentSeason] })
+    const [latestFetchedGrid, setLatestFetchedGrid] = useState<number[][]>(props.grid)
 
     const contributionPercentage = useMemo(() => {
         if (playerContributions && playerTeam) {
@@ -83,26 +84,35 @@ export default function Page(props: GameProps) {
         }
     }, 1000);
 
+    useInterval(async () => {
+        const client = createPublicClient({
+            chain: USE_MAINNET ? zora : zoraTestnet,
+            transport: http()
+        })
+        const [grid, _] = await constructGridFromContractData(client, CONTRACT_ADDRESS);
+        setLatestFetchedGrid(grid)
+    }, 5000);
+
     const tie = BigInt(props.blueScore) === BigInt(props.redScore);
     const teamBlueWinning = BigInt(props.blueScore) > BigInt(props.redScore);
     const price = formatEther(BigInt(props.currentGame) * parseEther('0.0001'));
 
     const onCellClick = useCallback((x: number, y: number) => {
-        if (!playerTeam || props.grid[x][y] !== 0) { return }
+        if (!playerTeam || latestFetchedGrid[x][y] !== 0) { return }
         setStagedCells({ ...stagedCells, [stagedCellKey(x, y)]: !stagedCells[stagedCellKey(x, y)] })
     }, [stagedCells, setStagedCells, playerTeam])
 
 
     // Mutate grid value to include staged cells
     const stagedGrid = useMemo(() => {
-        let ret = JSON.parse(JSON.stringify(props.grid));
+        let ret = JSON.parse(JSON.stringify(latestFetchedGrid));
         for (let x = 0; x < GRID_SIZE; x++) {
             for (let y = 0; y < GRID_SIZE; y++) {
                 if (stagedCells[stagedCellKey(x, y)]) {
                     // We will use 3 and 4 to denote the staged cells, so a staged cell for team 1 will be 3, and a staged cell for team 2 will be 4
                     ret[x][y] = (playerTeam as number) + 2;
                 } else {
-                    ret[x][y] = props.grid[x][y]
+                    ret[x][y] = latestFetchedGrid[x][y]
                 }
             }
         }
