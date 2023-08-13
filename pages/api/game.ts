@@ -24,7 +24,7 @@ export default async function handler(req: NextRequest, res: NextResponse<GameDa
     return res.json(gameData)
 }
 
-async function handleGameDataRequest() {
+export async function handleGameDataRequest() {
     const client = createPublicClient({
         chain: USE_MAINNET ? zora : zoraTestnet,
         transport: http()

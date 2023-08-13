@@ -16,7 +16,7 @@ import { GameBoard } from '../components/gameBoard';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { usePrepareContractWrite, useContractWrite } from 'wagmi'
 import { useGameData } from '../hooks/useGameData';
-import { GameData } from './api/game';
+import { GameData, handleGameDataRequest } from './api/game';
 
 type StagedCellKey = `${number}-${number}`
 type StagedCellMapping = { [key: StagedCellKey]: boolean }
@@ -162,7 +162,7 @@ export default function Page({ fallback }: { [key: string]: GameData }) {
 }
 
 export const getStaticProps: GetStaticProps<{ fallback: ({ [key: string]: GameData }) }> = async () => {
-    const gameData = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_VERCEL_URL}/api/game`).then(res => res.json())
+    const gameData = await handleGameDataRequest();
 
     return {
         props: {
