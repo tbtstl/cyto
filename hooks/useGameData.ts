@@ -18,8 +18,6 @@ const fallbackData: GameData = {
 export function useGameData() {
     const { data, error, isLoading } = useSWR(`/api/game`, fetcher, { refreshInterval: 10000 })
 
-    console.log({ data })
-
     return {
         data: data || fallbackData,
         isLoading,
