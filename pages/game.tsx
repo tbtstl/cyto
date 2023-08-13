@@ -18,19 +18,6 @@ import { usePrepareContractWrite, useContractWrite } from 'wagmi'
 import { useGameData } from '../hooks/useGameData';
 import { GameData } from './api/game';
 
-
-interface GameProps {
-    currentGame: string,
-    currentRound: string,
-    redScore: string,
-    blueScore: string,
-    grid: number[][],
-    prizePool: string
-    roundEnd: string
-    redContributions: string,
-    blueContributions: string
-}
-
 type StagedCellKey = `${number}-${number}`
 type StagedCellMapping = { [key: StagedCellKey]: boolean }
 const stagedCellKey = (x: number, y: number) => `${x}-${y}` as StagedCellKey
@@ -80,7 +67,6 @@ function GamePage() {
         if (!playerTeam || gameData.grid[x][y] !== 0) { return }
         setStagedCells({ ...stagedCells, [stagedCellKey(x, y)]: !stagedCells[stagedCellKey(x, y)] })
     }, [stagedCells, setStagedCells, playerTeam])
-
 
     // Mutate grid value to include staged cells
     const stagedGrid = useMemo(() => {
