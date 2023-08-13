@@ -1234,7 +1234,7 @@ circomlib@^2.0.5:
   resolved "https://registry.yarnpkg.com/circomlib/-/circomlib-2.0.5.tgz#183c703e53ed7d011811842dbeeeb9819f4cc1d6"
   integrity sha512-O7NQ8OS+J4eshBuoy36z/TwQU0YHw8W3zxZcs4hVwpEll3e4hDm3mgkIPqItN8FDeLEKZFK3YeT/+k8TiLF3/A==
 
-client-only@0.0.1:
+client-only@0.0.1, client-only@^0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/client-only/-/client-only-0.0.1.tgz#38bba5d403c41ab150bff64a95c85013cf73bca1"
   integrity sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==
@@ -2443,6 +2443,14 @@ supports-color@^7.1.0:
   integrity sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==
   dependencies:
     has-flag "^4.0.0"
+
+swr@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/swr/-/swr-2.2.1.tgz#19b89a9034a62a73c30dbf06857a0a31981cd60a"
+  integrity sha512-KJVA7dGtOBeZ+2sycEuzUfVIP5lZ/cd0xjevv85n2YG0x1uHJQicjAtahVZL6xG3+TjqhbBqimwYzVo3saeVXQ==
+  dependencies:
+    client-only "^0.0.1"
+    use-sync-external-store "^1.2.0"
 
 text-encoding-utf-8@^1.0.2:
   version "1.0.2"

@@ -1,9 +1,9 @@
 import * as React from 'react'
+import { SWRConfig } from 'swr'
 import { useRouter } from 'next/router'
 import styles from '../styles/game.module.css'
-import { createPublicClient, formatEther, http, parseEther } from 'viem';
-import { USE_MAINNET, CONTRACT_ADDRESS, RED_TEAM_NUMBER, BLUE_TEAM_NUMBER, GRID_SIZE, constructGridFromContractData } from '../constants/utils'
-import { zora, zoraTestnet } from 'viem/chains';
+import { formatEther, parseEther } from 'viem';
+import { CONTRACT_ADDRESS, RED_TEAM_NUMBER, GRID_SIZE } from '../constants/utils'
 import abi from '../constants/abi.json'
 import { ContentBox } from '../components/contentBox'
 
@@ -13,9 +13,10 @@ import { GetStaticProps } from 'next';
 import { useAccount, useContractRead } from 'wagmi';
 import { useCallback, useMemo, useState } from 'react';
 import { GameBoard } from '../components/gameBoard';
-import { useInterval } from '../hooks/useInterval';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { usePrepareContractWrite, useContractWrite } from 'wagmi'
+import { useGameData } from '../hooks/useGameData';
+import { GameData } from './api/game';
 
 
 interface GameProps {
@@ -33,14 +34,13 @@ interface GameProps {
 type StagedCellKey = `${number}-${number}`
 type StagedCellMapping = { [key: StagedCellKey]: boolean }
 const stagedCellKey = (x: number, y: number) => `${x}-${y}` as StagedCellKey
-const gamePrice = (stagedChanges: number, game: number) => parseEther('0.001') * (BigInt(stagedChanges)) * BigInt(game)
+const gamePrice = (stagedChanges: number) => parseEther('0.001') * (BigInt(stagedChanges))
 
-
-export default function Page(props: GameProps) {
+function GamePage() {
+    const { data: gameData } = useGameData();
     const router = useRouter();
     const { address, isDisconnected } = useAccount()
     const { openConnectModal } = useConnectModal();
-    const [timeToEvolution, setTimeToEvolution] = useState(timeRemaining(parseInt(props.roundEnd)));
     const { data: playerTeam } = useContractRead({
         address: CONTRACT_ADDRESS,
         abi,
@@ -59,59 +59,39 @@ export default function Page(props: GameProps) {
         address: CONTRACT_ADDRESS,
         abi: abi,
         functionName: 'injectCells',
-        value: gamePrice(numStagedChanges, parseInt(props.currentGame)),
+        value: gamePrice(numStagedChanges),
         args: [stagedCellsArgs]
     })
     const { isLoading, isSuccess, write } = useContractWrite(config)
-    const { data: playerContributions } = useContractRead({ address: CONTRACT_ADDRESS, abi, functionName: 'playerContributions', args: [address, props.currentGame] })
-    const [latestFetchedGrid, setLatestFetchedGrid] = useState<number[][]>(props.grid)
+    const { data: playerContributions } = useContractRead({ address: CONTRACT_ADDRESS, abi, functionName: 'playerContributions', args: [address, gameData.currentGame] })
 
     const contributionPercentage = useMemo(() => {
         if (playerContributions && playerTeam) {
-            return playerTeam === RED_TEAM_NUMBER ? (parseInt(playerContributions.toString()) / (parseInt(props.redContributions)) * 100) : (parseInt(playerContributions.toString()) / (parseInt(props.blueContributions)) * 100)
+            return playerTeam === RED_TEAM_NUMBER ? (parseInt(playerContributions.toString()) / (parseInt(gameData.redContributions)) * 100) : (parseInt(playerContributions.toString()) / (parseInt(gameData.blueContributions)) * 100)
         } else {
             return null
         }
     }, [playerContributions])
 
-
-    useInterval(() => {
-        const updatedTimeToEvolution = timeRemaining(parseInt(props.roundEnd));
-
-        if (updatedTimeToEvolution !== timeToEvolution) {
-            setTimeToEvolution(updatedTimeToEvolution)
-        }
-    }, 1000);
-
-    useInterval(async () => {
-        const client = createPublicClient({
-            chain: USE_MAINNET ? zora : zoraTestnet,
-            transport: http()
-        })
-        const [grid, _] = await constructGridFromContractData(client, CONTRACT_ADDRESS);
-        setLatestFetchedGrid(grid)
-    }, 30000);
-
-    const tie = BigInt(props.blueScore) === BigInt(props.redScore);
-    const teamBlueWinning = BigInt(props.blueScore) > BigInt(props.redScore);
-    const price = formatEther(BigInt(props.currentGame) * parseEther('0.0001'));
+    const tie = BigInt(gameData.blueScore) === BigInt(gameData.redScore);
+    const teamBlueWinning = BigInt(gameData.blueScore) > BigInt(gameData.redScore);
 
     const onCellClick = useCallback((x: number, y: number) => {
-        if (!playerTeam || latestFetchedGrid[x][y] !== 0) { return }
+        if (!playerTeam || gameData.grid[x][y] !== 0) { return }
         setStagedCells({ ...stagedCells, [stagedCellKey(x, y)]: !stagedCells[stagedCellKey(x, y)] })
     }, [stagedCells, setStagedCells, playerTeam])
 
 
     // Mutate grid value to include staged cells
     const stagedGrid = useMemo(() => {
-        let ret = JSON.parse(JSON.stringify(latestFetchedGrid));
+        let ret = JSON.parse(JSON.stringify(gameData.grid));
         for (let x = 0; x < GRID_SIZE; x++) {
             for (let y = 0; y < GRID_SIZE; y++) {
                 if (stagedCells[stagedCellKey(x, y)]) {
                     // We will use 3 and 4 to denote the staged cells, so a staged cell for team 1 will be 3, and a staged cell for team 2 will be 4
                     ret[x][y] = (playerTeam as number) + 2;
                 } else {
-                    ret[x][y] = latestFetchedGrid[x][y]
+                    ret[x][y] = gameData.grid[x][y]
                 }
             }
         }
@@ -141,21 +121,21 @@ export default function Page(props: GameProps) {
                     <ContentBox>
                         <h1>CELLULAR ENERGY</h1>
                         <p>
-                            This is game <b>{props.currentGame}</b>, round <b>{props.currentRound}</b> of <b>96</b>.<br />
-                            <span className="blue"><b>Team Blue</b></span>&nbsp;{!tie && teamBlueWinning ? 'is currently winning with ' : 'currently has '} <b>{props.blueScore} points</b>.<br />
-                            <span className="red"><b>Team Red</b></span>&nbsp;{!tie && !teamBlueWinning ? 'is currently winning with ' : 'currently has'} <b>{props.redScore} points</b>.<br />
+                            This is game <b>{gameData.currentGame}</b>, round <b>{gameData.currentRound}</b> of <b>96</b>.<br />
+                            <span className="blue"><b>Team Blue</b></span>&nbsp;{!tie && teamBlueWinning ? 'is currently winning with ' : 'currently has '} <b>{gameData.blueScore} points</b>.<br />
+                            <span className="red"><b>Team Red</b></span>&nbsp;{!tie && !teamBlueWinning ? 'is currently winning with ' : 'currently has'} <b>{gameData.redScore} points</b>.<br />
                         </p>
-                        {timeToEvolution === '0:00' ? (
+                        {parseInt(gameData.roundEnd) > (Date.now() / 1000) ? (
                             <p><b>The board is currently evolving.</b></p>
                         ) : (
-                            <p>The next evolution will occur in <b>{timeToEvolution}</b>.</p>
+                            <p>The next evolution will occur in <b>{formatTime(parseInt(gameData.roundEnd))}</b>.</p>
                         )}
                         <p>
                             Place a cell on the grid by clicking on an empty space. <br />
                             If it survives the next evolution, your team will earn a point.
                         </p>
                         <p>
-                            The current prize pool is <b>{formatEther(BigInt(props.prizePool))} ETH</b>.
+                            The current prize pool is <b>{formatEther(BigInt(gameData.prizePool))} ETH</b>.
                             {contributionPercentage && (
                                 <><br />You've contributed <b>{contributionPercentage}%</b> to your team's prize pool.</>
                             )}
@@ -171,35 +151,38 @@ export default function Page(props: GameProps) {
     )
 }
 
-const timeRemaining = (timestamp: number): string => {
-    const currentTime = Math.floor(Date.now() / 1000);
-    const remainingTime = timestamp - currentTime;
+const formatTime = (timestamp: number): string => {
+    // Convert the timestamp to milliseconds
+    const date = new Date(timestamp * 1000);
 
-    if (remainingTime <= 0) {
-        return '0:00';
-    }
+    // Extract hours, minutes, and AM/PM
+    let hours = date.getHours();
+    const minutes = ("0" + date.getMinutes()).slice(-2); // Ensure 2 digits
+    const ampm = hours >= 12 ? 'pm' : 'am';
 
-    const minutes = Math.floor(remainingTime / 60);
-    const seconds = remainingTime % 60;
+    // Convert to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
 
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return hours + ':' + minutes + ampm;
 }
 
-export const getStaticProps: GetStaticProps<GameProps> = async () => {
-    const client = createPublicClient({
-        chain: USE_MAINNET ? zora : zoraTestnet,
-        transport: http()
-    })
-    const contractConfig = { address: CONTRACT_ADDRESS, abi }
+export default function Page({ fallback }: { [key: string]: GameData }) {
+    return (
+        <SWRConfig value={{ fallback }}>
+            <GamePage />
+        </SWRConfig>
+    )
+}
 
-    const currentGame = (await client.readContract({ ...contractConfig, functionName: 'currentGame' }) as bigint).toString()
-    const currentRound = (await client.readContract({ ...contractConfig, functionName: 'currentRound' }) as bigint).toString()
-    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [RED_TEAM_NUMBER, currentGame] }) as bigint).toString()
-    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [BLUE_TEAM_NUMBER, currentGame] }) as bigint).toString()
-    const redContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [RED_TEAM_NUMBER, currentGame] }) as bigint
-    const blueContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [BLUE_TEAM_NUMBER, currentGame] }) as bigint
-    const roundEnd = (await client.readContract({ ...contractConfig, functionName: 'roundEnd' }) as bigint).toString()
-    const [grid, _] = await constructGridFromContractData(client, CONTRACT_ADDRESS)
+export const getStaticProps: GetStaticProps<{ fallback: ({ [key: string]: GameData }) }> = async () => {
+    const gameData = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_VERCEL_URL}/api/game`).then(res => res.json())
 
-    return { props: { currentGame, currentRound, redScore, blueScore, grid, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd, redContributions: redContributions.toString(), blueContributions: blueContributions.toString() }, revalidate: 1 }
+    return {
+        props: {
+            fallback: {
+                '/api/game': gameData
+            }
+        }
+    }
 }
