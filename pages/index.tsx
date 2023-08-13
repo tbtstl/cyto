@@ -13,7 +13,6 @@ import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 
 interface GameStats {
-    currentSeason: string,
     currentGame: string,
     redScore: string,
     blueScore: string,
@@ -35,8 +34,7 @@ export default function Page(gameStats: GameStats) {
                 <h1>CELLULAR ENERGY</h1><br />
                 <p>Welcome to CELLULAR ENERGY.</p>
                 <p>
-                    The current season is <b>{gameStats.currentSeason}</b>.<br />
-                    We are in game <b>{gameStats.currentGame}</b> of <b>7</b>.<br />
+                    We are in game <b>{gameStats.currentGame}</b>.<br />
                     <span className="blue"><b>Team Blue</b></span>&nbsp;{!tie && teamBlueWinning ? 'is currently winning with ' : 'currently has '} <b>{gameStats.blueScore} points</b>.<br />
                     <span className="red"><b>Team Red</b></span>&nbsp;{!tie && !teamBlueWinning ? 'is currently winning with ' : 'currently has'} <b>{gameStats.redScore} points</b>.<br />
                     The current prize pool contains <b>{formatEther(BigInt(gameStats.prizePool))} ETH</b>.
@@ -61,12 +59,11 @@ export const getStaticProps: GetStaticProps<GameStats> = async () => {
     })
     const contractConfig = { address: CONTRACT_ADDRESS, abi }
 
-    const currentSeason = (await client.readContract({ ...contractConfig, functionName: 'season' }) as bigint).toString()
-    const currentGame = (await client.readContract({ ...contractConfig, functionName: 'epoch' }) as bigint).toString()
-    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint).toString()
-    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint).toString()
-    const redContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint
-    const blueContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint
+    const currentGame = (await client.readContract({ ...contractConfig, functionName: 'currentGame' }) as bigint).toString()
+    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [RED_TEAM_NUMBER, currentGame] }) as bigint).toString()
+    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [BLUE_TEAM_NUMBER, currentGame] }) as bigint).toString()
+    const redContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [RED_TEAM_NUMBER, currentGame] }) as bigint
+    const blueContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [BLUE_TEAM_NUMBER, currentGame] }) as bigint
 
-    return { props: { currentSeason, currentGame, redScore, blueScore, prizePool: (redContributions + blueContributions).toString() }, revalidate: 60 }
+    return { props: { currentGame, redScore, blueScore, prizePool: (redContributions + blueContributions).toString() }, revalidate: 60 }
 }

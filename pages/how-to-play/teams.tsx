@@ -10,9 +10,9 @@ export default function Page() {
         <div className='center'>
             <ContentBox >
                 <h1>TEAMS</h1><br />
-                <p>You can join a team once every <b>season</b> (7 days).  There are only two teams, <span className="red">Team Red</span> and <span className="blue">Team Blue</span>.</p>
+                <p>There are only two teams, <span className="red">Team Red</span> and <span className="blue">Team Blue</span>.</p>
                 <p>
-                    At the end of each season you can join a new team.
+                    You can only join a team once.
                 </p>
             </ContentBox>
             <FooterButtons>

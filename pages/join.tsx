@@ -53,7 +53,7 @@ export default function Page() {
         <div className='center'>
             <ContentBox >
                 <h1>JOIN A TEAM</h1><br />
-                <p>You haven't joined a team for this season yet. In order to play, you must join a team.</p>
+                <p>You haven't joined a team yet. In order to play, you must join a team.</p>
                 <p>
                     Please join <span className="red"><b>Team Red</b></span> or <span className="blue"><b>Team Blue</b></span>.
                 </p>

@@ -21,7 +21,6 @@ import { usePrepareContractWrite, useContractWrite } from 'wagmi'
 interface GameProps {
     currentGame: string,
     currentRound: string,
-    currentSeason: string,
     redScore: string,
     blueScore: string,
     grid: number[][],
@@ -46,7 +45,7 @@ export default function Page(props: GameProps) {
         address: CONTRACT_ADDRESS,
         abi,
         functionName: 'playerTeam',
-        args: [address, props.currentSeason]
+        args: [address]
     })
     const [stagedCells, setStagedCells] = useState<StagedCellMapping>({})
     const numStagedChanges = useMemo(() => Object.keys(stagedCells).filter((k) => !!stagedCells[k as StagedCellKey]).length, [stagedCells]);
@@ -64,7 +63,7 @@ export default function Page(props: GameProps) {
         args: [stagedCellsArgs]
     })
     const { isLoading, isSuccess, write } = useContractWrite(config)
-    const { data: playerContributions } = useContractRead({ address: CONTRACT_ADDRESS, abi, functionName: 'playerContributions', args: [address, props.currentSeason] })
+    const { data: playerContributions } = useContractRead({ address: CONTRACT_ADDRESS, abi, functionName: 'playerContributions', args: [address, props.currentGame] })
     const [latestFetchedGrid, setLatestFetchedGrid] = useState<number[][]>(props.grid)
 
     const contributionPercentage = useMemo(() => {
@@ -142,7 +141,7 @@ export default function Page(props: GameProps) {
                     <ContentBox>
                         <h1>CELLULAR ENERGY</h1>
                         <p>
-                            This is game <b>{props.currentGame}</b> of <b>7</b>, round <b>{props.currentRound}</b> of <b>96</b>.<br />
+                            This is game <b>{props.currentGame}</b>, round <b>{props.currentRound}</b> of <b>96</b>.<br />
                             <span className="blue"><b>Team Blue</b></span>&nbsp;{!tie && teamBlueWinning ? 'is currently winning with ' : 'currently has '} <b>{props.blueScore} points</b>.<br />
                             <span className="red"><b>Team Red</b></span>&nbsp;{!tie && !teamBlueWinning ? 'is currently winning with ' : 'currently has'} <b>{props.redScore} points</b>.<br />
                         </p>
@@ -156,7 +155,6 @@ export default function Page(props: GameProps) {
                             If it survives the next evolution, your team will earn a point.
                         </p>
                         <p>
-                            The current cost to place a cell is <b>{price} ETH</b>.<br />
                             The current prize pool is <b>{formatEther(BigInt(props.prizePool))} ETH</b>.
                             {contributionPercentage && (
                                 <><br />You've contributed <b>{contributionPercentage}%</b> to your team's prize pool.</>
@@ -194,15 +192,14 @@ export const getStaticProps: GetStaticProps<GameProps> = async () => {
     })
     const contractConfig = { address: CONTRACT_ADDRESS, abi }
 
-    const currentSeason = (await client.readContract({ ...contractConfig, functionName: 'season' }) as bigint).toString()
-    const currentGame = (await client.readContract({ ...contractConfig, functionName: 'epoch' }) as bigint).toString()
-    const currentRound = (await client.readContract({ ...contractConfig, functionName: 'round' }) as bigint).toString()
-    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint).toString()
-    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint).toString()
-    const redContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [RED_TEAM_NUMBER, currentSeason] }) as bigint
-    const blueContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [BLUE_TEAM_NUMBER, currentSeason] }) as bigint
+    const currentGame = (await client.readContract({ ...contractConfig, functionName: 'currentGame' }) as bigint).toString()
+    const currentRound = (await client.readContract({ ...contractConfig, functionName: 'currentRound' }) as bigint).toString()
+    const redScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [RED_TEAM_NUMBER, currentGame] }) as bigint).toString()
+    const blueScore = (await client.readContract({ ...contractConfig, functionName: 'teamScore', args: [BLUE_TEAM_NUMBER, currentGame] }) as bigint).toString()
+    const redContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [RED_TEAM_NUMBER, currentGame] }) as bigint
+    const blueContributions = await client.readContract({ ...contractConfig, functionName: 'teamContributions', args: [BLUE_TEAM_NUMBER, currentGame] }) as bigint
     const roundEnd = (await client.readContract({ ...contractConfig, functionName: 'roundEnd' }) as bigint).toString()
     const [grid, _] = await constructGridFromContractData(client, CONTRACT_ADDRESS)
 
-    return { props: { currentGame, currentRound, currentSeason, redScore, blueScore, grid, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd, redContributions: redContributions.toString(), blueContributions: blueContributions.toString() }, revalidate: 1 }
+    return { props: { currentGame, currentRound, redScore, blueScore, grid, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd, redContributions: redContributions.toString(), blueContributions: blueContributions.toString() }, revalidate: 1 }
 }
