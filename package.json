@@ -10,6 +10,7 @@
     "circomlib": "^2.0.5",
     "ds-test": "https://github.com/dapphub/ds-test#cd98eff28324bfac652e63a239a60632a761790b",
     "forge-std": "https://github.com/foundry-rs/forge-std#cd7d533f9a0ee0ec02ad81e0a8f262bc4203c653",
+    "ioredis": "^5.3.2",
     "next": "^13.4.7",
     "prettier": "^2.8.8",
     "prettier-plugin-solidity": "^1.1.3",

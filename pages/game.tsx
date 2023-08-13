@@ -162,7 +162,7 @@ export default function Page({ fallback }: { [key: string]: GameData }) {
 }
 
 export const getStaticProps: GetStaticProps<{ fallback: ({ [key: string]: GameData }) }> = async () => {
-    const gameData = await handleGameDataRequest();
+    const gameData = await handleGameDataRequest()
 
     return {
         props: {
