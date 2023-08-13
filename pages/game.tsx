@@ -125,10 +125,10 @@ function GamePage() {
                             <span className="blue"><b>Team Blue</b></span>&nbsp;{!tie && teamBlueWinning ? 'is currently winning with ' : 'currently has '} <b>{gameData.blueScore} points</b>.<br />
                             <span className="red"><b>Team Red</b></span>&nbsp;{!tie && !teamBlueWinning ? 'is currently winning with ' : 'currently has'} <b>{gameData.redScore} points</b>.<br />
                         </p>
-                        {parseInt(gameData.roundEnd) > (Date.now() / 1000) ? (
+                        {parseInt(gameData.roundEnd) < (Date.now() / 1000) ? (
                             <p><b>The board is currently evolving.</b></p>
                         ) : (
-                            <p>The next evolution will occur in <b>{formatTime(parseInt(gameData.roundEnd))}</b>.</p>
+                            <p>The next evolution will occur at <b>{formatTime(parseInt(gameData.roundEnd))}</b>.</p>
                         )}
                         <p>
                             Place a cell on the grid by clicking on an empty space. <br />
