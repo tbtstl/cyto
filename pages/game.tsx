@@ -169,6 +169,7 @@ export const getStaticProps: GetStaticProps<{ fallback: ({ [key: string]: GameDa
             fallback: {
                 '/api/game': gameData
             }
-        }
+        },
+        revalidate: 1
     }
 }
