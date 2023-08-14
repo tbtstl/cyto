@@ -9,6 +9,7 @@ const fallbackData: GameData = {
     redScore: '0',
     blueScore: '0',
     grid: Array.from({ length: 64 }, () => Array(64).fill(0)),
+    history: [],
     prizePool: '0',
     roundEnd: '0',
     redContributions: '0',

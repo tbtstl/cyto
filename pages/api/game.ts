@@ -1,10 +1,10 @@
-import Redis, { RedisOptions } from 'ioredis';
 import { createPublicClient, http } from "viem";
 import { BLUE_TEAM_NUMBER, CONTRACT_ADDRESS, RED_TEAM_NUMBER, USE_MAINNET } from "../../constants/utils";
 import { zora, zoraTestnet } from "viem/chains";
 import abi from '../../constants/abi.json'
 import { constructGridFromContractData } from '../../constants/utils'
 import { NextRequest, NextResponse } from "next/server";
+import { getRedisClient, rKey } from "./utils";
 
 export interface GameData {
     currentGame: string,
@@ -12,6 +12,7 @@ export interface GameData {
     redScore: string,
     blueScore: string,
     grid: number[][],
+    history: number[][][],
     prizePool: string
     roundEnd: string
     redContributions: string,
@@ -25,31 +26,6 @@ export default async function handler(req: NextRequest, res: NextResponse<GameDa
     return res.json(gameData)
 }
 
-function getRedisClient() {
-    const options: RedisOptions = {
-        host: process.env.REDIS_HOST,
-        port: parseInt(process.env.REDIS_PORT || '0'),
-        password: process.env.REDIS_PASSWORD,
-        lazyConnect: true,
-        showFriendlyErrorStack: true,
-        enableAutoPipelining: true,
-        maxRetriesPerRequest: 0,
-        retryStrategy: (times: number) => {
-            if (times > 3) {
-                throw new Error(`[Redis] Could not connect after ${times} attempts`);
-            }
-
-            return Math.min(times * 200, 1000);
-        }
-    }
-
-    const redis = new Redis(options);
-    redis.on('error', (error: unknown) => {
-        console.warn('[Redis] Error connecting', error);
-    });
-    return redis;
-}
-
 export async function handleGameDataRequest() {
     const client = createPublicClient({
         chain: USE_MAINNET ? zora : zoraTestnet,
@@ -58,7 +34,6 @@ export async function handleGameDataRequest() {
     const contractConfig = { address: CONTRACT_ADDRESS, abi }
 
     const redis = getRedisClient();
-    const rKey = (key: string) => `${CONTRACT_ADDRESS}:${key}`
 
     let currentGame = await redis.get(rKey('currentGame'));
     let currentRound = await redis.get(rKey('currentRound'));
@@ -114,5 +89,7 @@ export async function handleGameDataRequest() {
         await redis.set(rKey('grid'), JSON.stringify(grid), 'EX', 10) // leave at 10 since this is not round invariant
     }
 
-    return { currentGame, currentRound, redScore, blueScore, grid, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd, redContributions: redContributions.toString(), blueContributions: blueContributions.toString() }
+    const history = await redis.zrange(rKey(`history:g${currentGame.toString()}`), 0, -1).then(result => result.map(r => JSON.parse(r) as number[][]))
+
+    return { currentGame, currentRound, redScore, blueScore, grid, history, prizePool: (redContributions + blueContributions).toString(), roundEnd: roundEnd, redContributions: redContributions.toString(), blueContributions: blueContributions.toString() }
 }

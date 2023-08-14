@@ -1,4 +1,4 @@
-import { JsonRpcAccount, hexToBigInt } from 'viem';
+import { hexToBigInt } from 'viem';
 import abi from './abi.json'
 import { PublicClient, WalletClient } from 'wagmi';
 export const USE_MAINNET = process.env.NEXT_PUBLIC_USE_MAINNET === 'true';

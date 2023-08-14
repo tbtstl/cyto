@@ -9,6 +9,7 @@ import fs from 'fs';
 import abi from '../../constants/abi.json';
 import { USE_MAINNET, GRID_SIZE, CELL_SIZE_BITS, MAX_CELL_VALUE, CONTRACT_ADDRESS, constructGridFromContractData } from '../../constants/utils'
 import axios from 'axios';
+import { getRedisClient, rKey } from './utils';
 
 
 const VERIFICATION_KEY = '/tmp/verification_key.json'
@@ -47,7 +48,17 @@ async function handleEvolveBoardRequest() {
         return evolvedBoard
     } else {
         // Get the board state and deconstruct it into a 2D array
-        console.log('constructing grid...');
+        const currentRound = await client.readContract({
+            address: CONTRACT_ADDRESS,
+            abi,
+            functionName: 'currentRound'
+        }) as BigInt
+        const currentGame = await client.readContract({
+            address: CONTRACT_ADDRESS,
+            abi,
+            functionName: 'currentGame'
+        }) as BigInt
+        console.log(`constructing grid for game ${currentGame.toString()} (${currentRound.toString()} of 96)...`);
         const [grid, rowInputs] = await constructGridFromContractData(client, CONTRACT_ADDRESS);
         // run game of life for one iteration, and return the rows as bigint strings
         console.log('generating output...')
@@ -92,6 +103,9 @@ async function handleEvolveBoardRequest() {
         })
         await client.writeContract(request)
         console.log('board evolved!')
+
+        const redis = getRedisClient();
+        await redis.zadd(rKey(`history:g${currentGame.toString()}`), parseInt(currentRound.toString()), JSON.stringify(grid));
         return true;
     }
 }
