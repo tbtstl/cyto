@@ -1,13 +1,3 @@
-import { createPublicClient, http } from "viem";
-import {
-  BLUE_TEAM_NUMBER,
-  CONTRACT_ADDRESS,
-  RED_TEAM_NUMBER,
-  USE_MAINNET,
-} from "../../constants/utils";
-import { zora, zoraTestnet } from "viem/chains";
-import abi from "../../constants/abi.json";
-import { constructGridFromContractData } from "../../constants/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { GAME_COLLECTION, ROUND_COLLECTION, getMongoDB } from "./utils";
 import { Game } from "../../models/Game";
@@ -37,7 +27,7 @@ export default async function handler(
 }
 
 export async function handleGameDataRequest() {
-  const mongoDB = await getMongoDB();
+  const [mongoDB, mongoClient] = await getMongoDB();
   const gameCollection = mongoDB.collection<Game>(GAME_COLLECTION);
   const roundCollection = mongoDB.collection<Round>(ROUND_COLLECTION);
 
@@ -145,6 +135,8 @@ export async function handleGameDataRequest() {
     )
     .limit(100)
     .toArray();
+
+  await mongoClient.close();
 
   return {
     currentGame,

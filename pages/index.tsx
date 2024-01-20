@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useRouter } from 'next/router'
 import { createPublicClient, formatEther, http } from 'viem';
 import { USE_MAINNET, CONTRACT_ADDRESS, RED_TEAM_NUMBER, BLUE_TEAM_NUMBER } from '../constants/utils'
-import { zora, zoraTestnet } from 'viem/chains';
+import { zora, zoraSepolia } from "viem/chains";
 import abi from '../constants/abi.json';
 import { ContentBox } from '../components/contentBox'
 
@@ -54,9 +54,9 @@ export default function Page(gameStats: GameStats) {
 
 export const getStaticProps: GetStaticProps<GameStats> = async () => {
     const client = createPublicClient({
-        chain: USE_MAINNET ? zora : zoraTestnet,
-        transport: http()
-    })
+      chain: USE_MAINNET ? zora : zoraSepolia,
+      transport: http(),
+    });
     const contractConfig = { address: CONTRACT_ADDRESS, abi }
 
     const currentGame = (await client.readContract({ ...contractConfig, functionName: 'currentGame' }) as bigint).toString()

@@ -2,13 +2,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createWalletClient, http, publicActions } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { zora, zoraTestnet } from 'viem/chains';
-import path from 'path'
-import { groth16 } from 'snarkjs';
-import fs from 'fs';
-import abi from '../../constants/abi.json';
-import { USE_MAINNET, GRID_SIZE, CELL_SIZE_BITS, MAX_CELL_VALUE, CONTRACT_ADDRESS, constructGridFromContractData } from '../../constants/utils'
-import axios from 'axios';
+import { zora, zoraSepolia } from "viem/chains";
+import path from "path";
+import { groth16 } from "snarkjs";
+import fs from "fs";
+import abi from "../../constants/abi.json";
+import {
+  USE_MAINNET,
+  GRID_SIZE,
+  CELL_SIZE_BITS,
+  MAX_CELL_VALUE,
+  CONTRACT_ADDRESS,
+  constructGridFromContractData,
+} from "../../constants/utils";
+import axios from "axios";
 import { GAME_COLLECTION, ROUND_COLLECTION, getMongoDB } from "./utils";
 import { Round } from "../../models/Round";
 import { Game } from "../../models/Game";
@@ -35,9 +42,9 @@ async function handleEvolveBoardRequest() {
   );
   const client = createWalletClient({
     account,
-    chain: USE_MAINNET ? zora : zoraTestnet,
+    chain: USE_MAINNET ? zora : zoraSepolia,
     transport: http(),
-  }).extend(publicActions);
+  }).extend(publicActions as any) as any;
   let evolvedBoard = false;
 
   // First, check the time remaining in the round
@@ -118,7 +125,8 @@ async function handleEvolveBoardRequest() {
       functionName: "evolveBoardState",
       args,
     });
-    await client.writeContract(request);
+    const hash = await client.writeContract(request);
+    await client.waitForTransactionReceipt({ hash, confirmations: 3 });
     console.log("board evolved!");
 
     const latestRound = (await client.readContract({
@@ -132,7 +140,7 @@ async function handleEvolveBoardRequest() {
       functionName: "currentGame",
     })) as BigInt;
 
-    const db = await getMongoDB();
+    const [db, mongoClient] = await getMongoDB();
     const roundCollection = db.collection<Round>(ROUND_COLLECTION);
     const gameCollection = db.collection<Game>(GAME_COLLECTION);
 
@@ -164,6 +172,7 @@ async function handleEvolveBoardRequest() {
       roundEnd: parseInt(roundEnd.toString()),
     };
     await roundCollection.insertOne(newRound);
+    await mongoClient.close();
     return true;
   }
 }
