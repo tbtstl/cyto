@@ -19,24 +19,16 @@ import axios from "axios";
 import { GAME_COLLECTION, ROUND_COLLECTION, getMongoDB } from "./utils";
 import { Round } from "../../models/Round";
 import { Game } from "../../models/Game";
+import { ActivityType, GameEndActivityItem } from "../../models/ActivityItem";
 
 const VERIFICATION_KEY = "/tmp/verification_key.json";
 const CIRCUIT_KEY = "/tmp/circuit_final.zkey";
 const CIRCUIT_WASM = "/tmp/circuit.wasm";
 
-export default async function handler(
-  req: NextRequest,
-  res: NextResponse<{ evolvedBoard: boolean }>
-) {
-  const evolvedBoard = await handleEvolveBoardRequest();
-
-  // @ts-ignore
-  return res.json({ evolvedBoard });
-}
 
 const pathTo = (fn: string) => fn;
 
-async function handleEvolveBoardRequest() {
+export async function handleEvolveBoardRequest() {
   const account = privateKeyToAccount(
     process.env.CELLULAR_ENERGY_VERIFIER_PK as `0x${string}`
   );
@@ -126,6 +118,7 @@ async function handleEvolveBoardRequest() {
       args,
     });
     const hash = await client.writeContract(request);
+    // Wait 3 confirmations so we get the latest round and latest game
     await client.waitForTransactionReceipt({ hash, confirmations: 3 });
     console.log("board evolved!");
 
@@ -169,7 +162,7 @@ async function handleEvolveBoardRequest() {
       humanId: parseInt(latestRound.toString()),
       gameId: latestStoredGame.humanId,
       grid: grid as number[][],
-      roundEnd: parseInt(roundEnd.toString()),
+      roundEnd: Date.now() / 1000 + 60 * 15,
     };
     await roundCollection.insertOne(newRound);
     await mongoClient.close();

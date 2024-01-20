@@ -24,6 +24,7 @@ import { WalletClient } from "wagmi";
 import { Game } from "../../models/Game";
 import { Round } from "../../models/Round";
 import { NextApiRequest, NextApiResponse } from "next";
+import { handleEvolveBoardRequest } from "./evolve";
 
 const GAME_RESET_SIGNATURE = getEventSignature("event GameReset(uint256 game)");
 const NEW_TEAM_JOINED_SIGNATURE = getEventSignature(
@@ -165,6 +166,21 @@ async function refreshBoardState(viemClient: PublicClient) {
     roundUpdate,
     { upsert: true, returnDocument: "after" }
   );
+
+  if (parseInt(roundEnd.toString()) < Date.now() / 1000) {
+    console.log("evolving board");
+    try {
+      const evolved = await handleEvolveBoardRequest();
+    } catch (e) {
+      console.error(e);
+    }
+  } else {
+    console.log(
+      `round ends in ${
+        parseInt(roundEnd.toString()) - Date.now() / 1000
+      } seconds, not evolving board`
+    );
+  }
 
   await client.close();
 

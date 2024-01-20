@@ -27,6 +27,7 @@ export interface CellsPlacedActivityItem extends ActivityItem {
 
 export interface RoundEndActivityItem extends ActivityItem {
   activityType: ActivityType.ROUND_END;
+  roundNumber: number;
 }
 
 export interface GameEndActivityItem extends ActivityItem {
@@ -34,4 +35,5 @@ export interface GameEndActivityItem extends ActivityItem {
   blueScore: number;
   redScore: number;
   prizePoolWei: string;
+  gameNumber: number;
 }
