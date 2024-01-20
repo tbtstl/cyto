@@ -1,5 +1,4 @@
 export interface Game {
-  _id: string;
   humanId: number;
   blueScore: number;
   redScore: number;

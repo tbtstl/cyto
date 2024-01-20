@@ -1,7 +1,6 @@
 export interface Round {
-  _id: string;
   humanId: number;
-  gameId: string;
+  gameId: number;
   grid: number[][];
-  rountEnd: number;
+  roundEnd: number;
 }

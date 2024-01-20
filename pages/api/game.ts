@@ -9,13 +9,7 @@ import { zora, zoraTestnet } from "viem/chains";
 import abi from "../../constants/abi.json";
 import { constructGridFromContractData } from "../../constants/utils";
 import { NextRequest, NextResponse } from "next/server";
-import {
-  GAME_COLLECTION,
-  ROUND_COLLECTION,
-  getMongoDB,
-  getRedisClient,
-  rKey,
-} from "./utils";
+import { GAME_COLLECTION, ROUND_COLLECTION, getMongoDB } from "./utils";
 import { Game } from "../../models/Game";
 import { Round } from "../../models/Round";
 
@@ -146,7 +140,7 @@ export async function handleGameDataRequest() {
 
   const history = await roundCollection
     .find(
-      { gameId: currentGame._id },
+      { gameId: currentGame.humanId },
       { sort: { humanId: -1 }, projection: { grid: 1, _id: 0 } }
     )
     .limit(100)

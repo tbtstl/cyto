@@ -9,105 +9,163 @@ import fs from 'fs';
 import abi from '../../constants/abi.json';
 import { USE_MAINNET, GRID_SIZE, CELL_SIZE_BITS, MAX_CELL_VALUE, CONTRACT_ADDRESS, constructGridFromContractData } from '../../constants/utils'
 import axios from 'axios';
-import { getRedisClient, rKey } from './utils';
+import { GAME_COLLECTION, ROUND_COLLECTION, getMongoDB } from "./utils";
+import { Round } from "../../models/Round";
+import { Game } from "../../models/Game";
 
+const VERIFICATION_KEY = "/tmp/verification_key.json";
+const CIRCUIT_KEY = "/tmp/circuit_final.zkey";
+const CIRCUIT_WASM = "/tmp/circuit.wasm";
 
-const VERIFICATION_KEY = '/tmp/verification_key.json'
-const CIRCUIT_KEY = '/tmp/circuit_final.zkey'
-const CIRCUIT_WASM = '/tmp/circuit.wasm'
+export default async function handler(
+  req: NextRequest,
+  res: NextResponse<{ evolvedBoard: boolean }>
+) {
+  const evolvedBoard = await handleEvolveBoardRequest();
 
-export default async function handler(req: NextRequest, res: NextResponse<{ evolvedBoard: boolean }>) {
-    const evolvedBoard = await handleEvolveBoardRequest()
-
-    // @ts-ignore
-    return res.json({ evolvedBoard })
+  // @ts-ignore
+  return res.json({ evolvedBoard });
 }
 
-const pathTo = (fn: string) => fn
+const pathTo = (fn: string) => fn;
 
 async function handleEvolveBoardRequest() {
-    const account = privateKeyToAccount(process.env.CELLULAR_ENERGY_VERIFIER_PK as `0x${string}`);
-    const client = createWalletClient({
-        account,
-        chain: USE_MAINNET ? zora : zoraTestnet,
-        transport: http()
-    }).extend(publicActions)
-    let evolvedBoard = false
+  const account = privateKeyToAccount(
+    process.env.CELLULAR_ENERGY_VERIFIER_PK as `0x${string}`
+  );
+  const client = createWalletClient({
+    account,
+    chain: USE_MAINNET ? zora : zoraTestnet,
+    transport: http(),
+  }).extend(publicActions);
+  let evolvedBoard = false;
 
+  // First, check the time remaining in the round
+  const roundEnd = (await client.readContract({
+    address: CONTRACT_ADDRESS,
+    abi,
+    functionName: "roundEnd",
+  })) as BigInt;
 
-    // First, check the time remaining in the round
-    const roundEnd = await client.readContract({
-        address: CONTRACT_ADDRESS,
-        abi,
-        functionName: 'roundEnd'
-    }) as BigInt
+  // If the game is still playable, no action is needed.
+  if (parseInt(roundEnd.toString()) > Date.now() / 1000) {
+    console.log(
+      `game is still playable for ${
+        parseInt(roundEnd.toString()) - Date.now() / 1000
+      } seconds`
+    );
+    return evolvedBoard;
+  } else {
+    // Get the board state and deconstruct it into a 2D array
+    const currentRound = (await client.readContract({
+      address: CONTRACT_ADDRESS,
+      abi,
+      functionName: "currentRound",
+    })) as BigInt;
+    const currentGame = (await client.readContract({
+      address: CONTRACT_ADDRESS,
+      abi,
+      functionName: "currentGame",
+    })) as BigInt;
+    console.log(
+      `constructing grid for game ${currentGame.toString()} (${currentRound.toString()} of 96)...`
+    );
+    const [grid, rowInputs] = await constructGridFromContractData(
+      client,
+      CONTRACT_ADDRESS
+    );
+    // run game of life for one iteration, and return the rows as bigint strings
+    console.log("generating output...");
+    const rowOutputs = generateGameOfLifeOutput(grid as number[][]);
 
-    // If the game is still playable, no action is needed. 
-    if (parseInt(roundEnd.toString()) > Date.now() / 1000) {
-        console.log(`game is still playable for ${parseInt(roundEnd.toString()) - Date.now() / 1000} seconds`)
-        return evolvedBoard
-    } else {
-        // Get the board state and deconstruct it into a 2D array
-        const currentRound = await client.readContract({
-            address: CONTRACT_ADDRESS,
-            abi,
-            functionName: 'currentRound'
-        }) as BigInt
-        const currentGame = await client.readContract({
-            address: CONTRACT_ADDRESS,
-            abi,
-            functionName: 'currentGame'
-        }) as BigInt
-        console.log(`constructing grid for game ${currentGame.toString()} (${currentRound.toString()} of 96)...`);
-        const [grid, rowInputs] = await constructGridFromContractData(client, CONTRACT_ADDRESS);
-        // run game of life for one iteration, and return the rows as bigint strings
-        console.log('generating output...')
-        const rowOutputs = generateGameOfLifeOutput(grid as number[][]);
+    console.log("downloading keys");
+    await downloadSnarkFiles();
 
-        console.log('downloading keys')
-        await downloadSnarkFiles();
+    // create the input JSON for snarkjs
+    // console.log('writing snark input...')
+    const snarkInput = {
+      current: rowInputs.map((i) => i.toString()),
+      next: rowOutputs.map((i) => i.toString()),
+    };
 
-        // create the input JSON for snarkjs
-        // console.log('writing snark input...')
-        const snarkInput = {
-            current: rowInputs.map(i => i.toString()),
-            next: rowOutputs.map(i => i.toString())
-        }
+    console.log(fs.readdirSync(path.join(__dirname)));
 
-        console.log(fs.readdirSync(path.join(__dirname)));
+    // use snarkjs to generate and verify the proof
+    console.log("generating proof...");
+    const { proof, publicSignals } = await generateProof(snarkInput);
 
-        // use snarkjs to generate and verify the proof
-        console.log('generating proof...')
-        const { proof, publicSignals } = await generateProof(snarkInput);
+    console.log("verifying proof...");
+    await verifyProof(proof, publicSignals);
 
-        console.log('verifying proof...')
-        await verifyProof(proof, publicSignals);
-
-        console.log('generating calldata...')
-        const rawCalldata = await groth16.exportSolidityCallData(proof, publicSignals);
-        // snarkjs gives us a very unparsable output that we need to hand parse
-        const calldataRegex = /(\[.+\]),(\[\[.+\]\]),(\[.*\]),(\[.*\])/;
-        const calldata = rawCalldata.match(calldataRegex);
-        if (!calldata || calldata.length !== 5) {
-            throw new Error('calldata could not be parsed')
-        }
-        calldata.shift();
-        const args = calldata.map((cd) => JSON.parse(cd));
-
-        console.log('evolving board...')
-        const { request } = await client.simulateContract({
-            address: CONTRACT_ADDRESS,
-            abi,
-            functionName: 'evolveBoardState',
-            args
-        })
-        await client.writeContract(request)
-        console.log('board evolved!')
-
-        const redis = getRedisClient();
-        await redis.zadd(rKey(`history:g${currentGame.toString()}`), parseInt(currentRound.toString()), JSON.stringify(grid));
-        return true;
+    console.log("generating calldata...");
+    const rawCalldata = await groth16.exportSolidityCallData(
+      proof,
+      publicSignals
+    );
+    // snarkjs gives us a very unparsable output that we need to hand parse
+    const calldataRegex = /(\[.+\]),(\[\[.+\]\]),(\[.*\]),(\[.*\])/;
+    const calldata = rawCalldata.match(calldataRegex);
+    if (!calldata || calldata.length !== 5) {
+      throw new Error("calldata could not be parsed");
     }
+    calldata.shift();
+    const args = calldata.map((cd) => JSON.parse(cd));
+
+    console.log("evolving board...");
+    const { request } = await client.simulateContract({
+      address: CONTRACT_ADDRESS,
+      abi,
+      functionName: "evolveBoardState",
+      args,
+    });
+    await client.writeContract(request);
+    console.log("board evolved!");
+
+    const latestRound = (await client.readContract({
+      address: CONTRACT_ADDRESS,
+      abi,
+      functionName: "currentRound",
+    })) as BigInt;
+    const latestGame = (await client.readContract({
+      address: CONTRACT_ADDRESS,
+      abi,
+      functionName: "currentGame",
+    })) as BigInt;
+
+    const db = await getMongoDB();
+    const roundCollection = db.collection<Round>(ROUND_COLLECTION);
+    const gameCollection = db.collection<Game>(GAME_COLLECTION);
+
+    // If a new game has been created, store it to the database
+    if (latestGame !== currentGame) {
+      const newGame: Game = {
+        humanId: parseInt(latestGame.toString()),
+        blueScore: 0,
+        redScore: 0,
+        blueContributions: 0,
+        redContributions: 0,
+      };
+      await gameCollection.insertOne(newGame);
+    }
+
+    const latestStoredGame = await gameCollection.findOne(
+      {},
+      { sort: { humanId: -1 } }
+    );
+
+    if (!latestStoredGame) {
+      throw new Error("No games found");
+    }
+
+    const newRound: Round = {
+      humanId: parseInt(latestRound.toString()),
+      gameId: latestStoredGame.humanId,
+      grid: grid as number[][],
+      roundEnd: parseInt(roundEnd.toString()),
+    };
+    await roundCollection.insertOne(newRound);
+    return true;
+  }
 }
 
 function generateGameOfLifeOutput(grid: number[][]) {

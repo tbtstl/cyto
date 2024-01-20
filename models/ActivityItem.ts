@@ -6,7 +6,6 @@ export enum ActivityType {
 }
 
 export interface ActivityItem {
-  _id: string;
   activityType: ActivityType;
   createdAt: number;
 }
