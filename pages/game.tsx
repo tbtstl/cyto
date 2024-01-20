@@ -47,6 +47,9 @@ function GamePage() {
         abi: abi,
         functionName: 'injectCells',
         value: gamePrice(numStagedChanges),
+        onSuccess: () => {
+            // TODO: REFRESH GRID
+        },
         args: [stagedCellsArgs]
     })
     const { isLoading, isSuccess, write } = useContractWrite(config)
