@@ -27,6 +27,8 @@ contract Cyto is SafeOwnable, GameBoard {
     mapping(uint8 => mapping(uint256 => uint256)) public teamContributions;
     // player => game => contributions
     mapping(address => mapping(uint256 => uint256)) public playerContributions;
+    // player => game => claimed
+    mapping(address => mapping(uint256 => bool)) public playerClaimed;
 
     error GameNotFinished();
     error AlreadyJoinedTeam();
@@ -38,10 +40,12 @@ contract Cyto is SafeOwnable, GameBoard {
     error InsufficientFunds();
     error TransferFailed();
 
-    event GameReset(uint256 game);
+    event NewGame(uint256 game);
+    event RoundEnded(uint256 round);
     event NewTeamJoined(address indexed player, uint8 indexed team);
     event NewCell(uint8 indexed x, uint8 indexed y, uint8 indexed team, address player);
     event NewCellsPlaced(uint8 indexed player, uint8 indexed team, uint256 numNewCells);
+    event RewardsClaimed(uint256 indexed game, address indexed player, uint256 amount);
 
     modifier onlyPlayer() {
         if (playerTeam[msg.sender] == 0) revert UnregisteredPlayer();
@@ -120,7 +124,20 @@ contract Cyto is SafeOwnable, GameBoard {
         if (_game >= currentGame) {
             revert GameNotFinished();
         }
-        uint8 team = playerTeam[msg.sender];
+        uint256 rewards = claimableRewards(_game, msg.sender);
+        if(rewards > 0) {
+            _transferFunds(recipient, rewards);
+        }
+        playerClaimed[msg.sender][_game] = true;
+        emit RewardsClaimed(_game, msg.sender, rewards);
+    }
+
+    function claimableRewards(uint256 _game, address player) public view returns (uint256) {
+        // Check that the game is over
+        if (_game >= currentGame) {
+            return 0;
+        }
+        uint8 team = playerTeam[player];
         uint256 team1Score = teamScore[TEAM_1][_game];
         uint256 team2Score = teamScore[TEAM_2][_game];
         bool gameWasTied = team1Score == team2Score;
@@ -128,18 +145,18 @@ contract Cyto is SafeOwnable, GameBoard {
 
         if (gameWasTied) {
             // If they tied for the game, they get their contributions back
-            uint256 contribution = playerContributions[msg.sender][_game];
-            _transferFunds(recipient, contribution);
+            uint256 contribution = playerContributions[player][_game];
+            return contribution;
         } else if (team == winningTeam) {
             // If they won the game, they get their contributions back plus a percentage of the losing teams contributions
-            uint256 contribution = playerContributions[msg.sender][_game];
+            uint256 contribution = playerContributions[player][_game];
             uint256 winningTeamContributions = teamContributions[winningTeam][_game];
             uint256 losingTeamContributions = teamContributions[winningTeam == TEAM_1 ? TEAM_2 : TEAM_1][_game];
             uint256 winnings = contribution + ((contribution / winningTeamContributions) * losingTeamContributions);
-            _transferFunds(recipient, winnings);
+            return winnings;
         } else {
             // Otherwise, they lost and get nothing.
-            // no-op
+            return 0;
         }
     }
 
@@ -192,10 +209,11 @@ contract Cyto is SafeOwnable, GameBoard {
         currentGame++;
         currentRound = 1;
         roundEnd = block.timestamp + ROUND_LENGTH;
-        emit GameReset(currentGame);
+        emit NewGame(currentGame);
     }
 
     function _startNewRound() private {
+        emit RoundEnded(currentRound);
         currentRound++;
         roundEnd = block.timestamp + ROUND_LENGTH;
     }

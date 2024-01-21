@@ -3,39 +3,58 @@ import { Button } from "../components/button";
 import { ContentBox } from "../components/contentBox";
 import { FooterButtons } from "../components/footerButtons";
 import abi from "../constants/abi.json";
-import { BLUE_TEAM_NUMBER, RED_TEAM_NUMBER } from "../constants/utils";
-import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
+import {
+  BLUE_TEAM_NUMBER,
+  RED_TEAM_NUMBER,
+  USE_MAINNET,
+} from "../constants/utils";
+import {
+  useAccount,
+  useContractRead,
+  useContractWrite,
+  usePrepareContractWrite,
+} from "wagmi";
 import { useCallback, useEffect } from "react";
+import { zora, zoraSepolia } from "viem/chains";
+import { createPublicClient, http } from "viem";
+import { HistoryData, handleHistoryDataRequest } from "./api/history";
+import { GameHistoryItem } from "../components/gameHistoryItem";
 
 const contractConfig = {
   address: process.env.NEXT_PUBLIC_CELLULAR_ENERGY_ADDRESS as `0x${string}`,
   abi,
-  functionName: "joinTeam",
+  functionName: "claimRewards",
 };
 
-export default function Page() {
+export default function Page({ history }: HistoryData) {
   const router = useRouter();
   const { address } = useAccount();
-  const { config: blueConfig } = usePrepareContractWrite({
+  const { data: playerTeam, isLoading } = useContractRead({
     ...contractConfig,
-    args: [BLUE_TEAM_NUMBER],
+    functionName: "playerTeam",
+    args: [address],
   });
-  const { config: redConfig } = usePrepareContractWrite({
-    ...contractConfig,
-    args: [RED_TEAM_NUMBER],
-  });
-  const { isLoading: isLoadingBlue, write: blueWrite } = useContractWrite({
-    ...blueConfig,
-    onSettled() {
-      router.push("/game");
-    },
-  });
-  const { isLoading: isLoadingRed, write: redWrite } = useContractWrite({
-    ...redConfig,
-    onSettled() {
-      router.push("/game");
-    },
-  });
+  const numberOfGames = history.length;
+  // const { config: blueConfig } = usePrepareContractWrite({
+  //   ...contractConfig,
+  //   args: [BLUE_TEAM_NUMBER],
+  // });
+  // const { config: redConfig } = usePrepareContractWrite({
+  //   ...contractConfig,
+  //   args: [RED_TEAM_NUMBER],
+  // });
+  // const { isLoading: isLoadingBlue, write: blueWrite } = useContractWrite({
+  //   ...blueConfig,
+  //   onSettled() {
+  //     router.push("/game");
+  //   },
+  // });
+  // const { isLoading: isLoadingRed, write: redWrite } = useContractWrite({
+  //   ...redConfig,
+  //   onSettled() {
+  //     router.push("/game");
+  //   },
+  // });
 
   useEffect(() => {
     if (!address) {
@@ -43,45 +62,59 @@ export default function Page() {
     }
   });
 
-  const handleButtonClick = useCallback(
-    (team: number) => () => {
-      if (team === BLUE_TEAM_NUMBER) {
-        blueWrite && blueWrite();
-      } else {
-        redWrite && redWrite();
-      }
-    },
-    [blueWrite, redWrite]
-  );
+  // const handleButtonClick = useCallback(
+  //   (team: number) => () => {
+  //     if (team === BLUE_TEAM_NUMBER) {
+  //       blueWrite && blueWrite();
+  //     } else {
+  //       redWrite && redWrite();
+  //     }
+  //   },
+  //   [blueWrite, redWrite]
+  // );
 
   return (
     <div className="center">
       <ContentBox>
-        <h1>JOIN A TEAM</h1>
+        <h1>GAME HISTORY</h1>
         <br />
         <p>
-          You haven't joined a team yet. In order to play, you must join a team.
+          There are <b>{numberOfGames}</b> completed games so far. If you've won
+          any games, you can collect your rewards here.
         </p>
-        <p>
-          Please join{" "}
-          <span className="red">
-            <b>Team Red</b>
-          </span>{" "}
-          or{" "}
-          <span className="blue">
-            <b>Team Blue</b>
-          </span>
-          .
-        </p>
+        <div>
+          {!isLoading && !!address ? (
+            history.map((game) => (
+              <GameHistoryItem
+                player={address}
+                team={playerTeam as number}
+                game={game}
+              />
+            ))
+          ) : (
+            <p>Loading...</p>
+          )}
+          <p></p>
+        </div>
       </ContentBox>
       <FooterButtons>
-        <Button theme="red" onClick={handleButtonClick(RED_TEAM_NUMBER)}>
-          {isLoadingRed ? "Check Wallet" : "Join Team RED"}
-        </Button>
-        <Button theme="blue" onClick={handleButtonClick(BLUE_TEAM_NUMBER)}>
-          {isLoadingBlue ? "Check Wallet" : "Join Team BLUE"}
+        <Button theme="red" onClick={() => router.push("/game")}>
+          Back to Game
         </Button>
       </FooterButtons>
     </div>
   );
+}
+
+export async function getStaticProps() {
+  const viemClient = createPublicClient({
+    chain: USE_MAINNET ? zora : zoraSepolia,
+    transport: http(),
+  });
+
+  const { history } = await handleHistoryDataRequest();
+
+  return {
+    props: { history },
+  };
 }

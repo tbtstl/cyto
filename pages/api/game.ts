@@ -6,7 +6,6 @@ import { Round } from "../../models/Round";
 export interface GameData {
   game: Game;
   round: Round;
-  history: Round[];
 }
 
 export default async function handler(

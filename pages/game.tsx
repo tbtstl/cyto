@@ -222,6 +222,13 @@ function GamePage() {
             >
               How to Play
             </Button>
+            <Button
+              onClick={() => {
+                router.push("/history");
+              }}
+            >
+              History
+            </Button>
           </FooterButtons>
         </div>
       </div>

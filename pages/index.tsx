@@ -74,13 +74,6 @@ export default function Page(gameStats: GameStats) {
           >
             How to Play
           </Button>
-          <Button
-            onClick={() => {
-              router.push("/rewards");
-            }}
-          >
-            History
-          </Button>
         </FooterButtons>
       </div>
     );
