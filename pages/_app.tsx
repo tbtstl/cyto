@@ -13,7 +13,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   [publicProvider()]
 );
 
-const { connectors } = getDefaultWallets({ appName: 'CELLULAR ENERGY', projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID as string, chains })
+const { connectors } = getDefaultWallets({ appName: 'CYTO', projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID as string, chains })
 
 const config = createConfig({
     autoConnect: true,

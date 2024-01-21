@@ -3,20 +3,20 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/CellularEnergy.sol";
+import "../src/Cyto.sol";
 
-contract CellularEnergyTest is Test {
+contract CytoTest is Test {
     address immutable owner = makeAddr("owner");
     address immutable player1 = vm.addr(0x2);
     address immutable player2 = vm.addr(0x3);
     address immutable player3 = vm.addr(0x4);
     address immutable verifierEOA = vm.addr(0x5);
-    CellularEnergy game;
+    Cyto game;
     Groth16Verifier verifier;
 
     function setUp() public {
         verifier = new Groth16Verifier();
-        game = new CellularEnergy(owner, address(verifier));
+        game = new Cyto(owner, address(verifier));
         vm.deal(player1, 1 ether);
         vm.deal(player2, 1 ether);
         vm.deal(player3, 1 ether);
@@ -75,13 +75,13 @@ contract CellularEnergyTest is Test {
         assertEq(game.playerTeam(player1), 1);
 
         vm.prank(player1);
-        vm.expectRevert(CellularEnergy.AlreadyJoinedTeam.selector);
+        vm.expectRevert(Cyto.AlreadyJoinedTeam.selector);
         game.joinTeam(2);
     }
 
     function testJoinTeam_InvalidTeam() public {
         vm.prank(player1);
-        vm.expectRevert(CellularEnergy.InvalidTeam.selector);
+        vm.expectRevert(Cyto.InvalidTeam.selector);
         game.joinTeam(3);
     }
 
@@ -103,7 +103,7 @@ contract CellularEnergyTest is Test {
 
     function testInjectCell_OnlyPlayer() public {
         vm.prank(player1);
-        vm.expectRevert(CellularEnergy.UnregisteredPlayer.selector);
+        vm.expectRevert(Cyto.UnregisteredPlayer.selector);
         game.injectCell{value: 1000000000000000}(0, 0);
     }
 
@@ -114,7 +114,7 @@ contract CellularEnergyTest is Test {
         vm.warp(game.roundEnd());
 
         vm.prank(player1);
-        vm.expectRevert(CellularEnergy.GameNotLive.selector);
+        vm.expectRevert(Cyto.GameNotLive.selector);
         game.injectCell{value: 1000000000000000}(0, 0);
     }
 
@@ -141,7 +141,7 @@ contract CellularEnergyTest is Test {
         vm.prank(player1);
         game.joinTeam(1);
         vm.prank(player1);
-        vm.expectRevert(CellularEnergy.InsufficientFunds.selector);
+        vm.expectRevert(Cyto.InsufficientFunds.selector);
         game.injectCell{value: 999999999999999}(0, 0);
     }
 }

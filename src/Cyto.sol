@@ -7,7 +7,7 @@ import {GameBoard} from "./GameBoard.sol";
 import {Groth16Verifier} from "./BoardVerifier.sol";
 import "forge-std/console2.sol";
 
-contract CellularEnergy is SafeOwnable, GameBoard {
+contract Cyto is SafeOwnable, GameBoard {
     uint256 public immutable ROUND_LENGTH = 15 minutes;
     uint256 public immutable GAME_LENGTH = 1 days;
     uint256 public immutable MAX_ROUNDS_PER_GAME = 96; // 1 day / 15 minutes

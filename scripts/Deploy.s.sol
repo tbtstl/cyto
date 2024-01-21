@@ -3,7 +3,7 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Script.sol";
-import "../src/CellularEnergy.sol";
+import "../src/Cyto.sol";
 
 contract Deploy is Script {
     function run() external {
@@ -12,7 +12,7 @@ contract Deploy is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         Groth16Verifier verifier = new Groth16Verifier();
-        CellularEnergy energy = new CellularEnergy(ownerAddress, address(verifier));
+        Cyto energy = new Cyto(ownerAddress, address(verifier));
 
         vm.stopBroadcast();
     }

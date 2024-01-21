@@ -157,7 +157,7 @@ function GamePage() {
         <GameBoard grid={stagedGrid} cellClickCB={onCellClick} />
         <div>
           <ContentBox>
-            <h1>CELLULAR ENERGY</h1>
+            <h1>CYTO</h1>
             <p>
               This is game <b>{gameData.game.humanId}</b>, round{" "}
               <b>{gameData.round.humanId}</b> of <b>96</b>.<br />
