@@ -1,7 +1,7 @@
 {
   "buildCommand": "yarn build:fe && npm i -g snarkjs@^0.7.0 && chmod +x ./scripts/downloadSnarkFiles.sh && ./scripts/downloadSnarkFiles.sh",
   "functions": {
-    "pages/api/evolve.ts": {
+    "pages/api/refresh.ts": {
       "memory": 3008
     }
   }
