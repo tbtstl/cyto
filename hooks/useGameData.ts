@@ -1,5 +1,6 @@
 import useSWR, { Fetcher } from 'swr'
 import { GameData } from '../pages/api/game'
+import { handleEvolveBoardRequest } from "../pages/api/evolve";
 
 const fetcher: Fetcher<GameData> = () => {
   console.log("fetching game data");

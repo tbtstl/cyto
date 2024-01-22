@@ -9,7 +9,7 @@ import { ContentBox } from '../components/contentBox'
 
 import { FooterButtons } from '../components/footerButtons';
 import { Button } from '../components/button';
-import { GetStaticProps } from 'next';
+import { GetServerSideProps, GetStaticProps } from "next";
 import { useAccount, useContractRead, useDisconnect } from "wagmi";
 import { useCallback, useMemo, useState } from "react";
 import { GameBoard } from "../components/gameBoard";
@@ -308,10 +308,16 @@ export default function Page({ fallback }: { [key: string]: GameData }) {
   );
 }
 
-export const getStaticProps: GetStaticProps<{
+export const getServerSideProps: GetServerSideProps<{
   fallback: { [key: string]: GameData };
 }> = async () => {
-  await handleRefreshRequest();
+  handleRefreshRequest()
+    .then(() => {
+      console.log("successfully refreshed via serverSideProps");
+    })
+    .catch((e) => {
+      console.log("Could not refresh from serverSideProps", e);
+    });
   const gameData = await handleGameDataRequest();
 
   return {
@@ -320,6 +326,5 @@ export const getStaticProps: GetStaticProps<{
         "/api/game": gameData,
       },
     },
-    revalidate: 5,
   };
 };
