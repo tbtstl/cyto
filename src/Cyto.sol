@@ -137,6 +137,10 @@ contract Cyto is SafeOwnable, GameBoard {
         if (_game >= currentGame) {
             return 0;
         }
+        // Check that they haven't already claimed their rewards
+        if(playerClaimed[player][_game]) {
+            return 0;
+        }
         uint8 team = playerTeam[player];
         uint256 team1Score = teamScore[TEAM_1][_game];
         uint256 team2Score = teamScore[TEAM_2][_game];
