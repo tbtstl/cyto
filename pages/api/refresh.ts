@@ -38,12 +38,21 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const refreshed = await handleRefreshRequest();
+  if (!refreshed) {
+    return res.status(429).json({ error: "Job already running" });
+  } else {
+    return res.status(200);
+  }
+}
+
+export async function handleRefreshRequest(): Promise<boolean> {
   const [db, mongoClient] = await getMongoDB();
   const jobsCollection = db.collection<RefreshJob>(REFRESH_JOBS_COLLECTION);
   const job = await jobsCollection.findOne({}, { sort: { jobStartedAt: -1 } });
 
   if (job?.jobRunning) {
-    res.status(429).json({ error: "Job already running" });
+    return false;
   }
 
   console.log("starting job");
@@ -66,11 +75,6 @@ export default async function handler(
   });
 
   await refreshBoardState(viemClient as any);
-  //   await createActivityItems(
-  //     viemClient,
-  //     job?.latestFetchedBlockHeight ||
-  //       parseInt(process.env.DEPLOYED_BLOCK_HEIGHT as string)
-  //   );
 
   await mongoClient.connect();
 
@@ -84,8 +88,7 @@ export default async function handler(
   );
 
   await mongoClient.close();
-
-  return res.json();
+  return true;
 }
 
 async function refreshBoardState(viemClient: PublicClient) {

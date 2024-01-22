@@ -37,19 +37,19 @@ export async function handleGameDataRequest() {
     throw new Error("No game or round found");
   }
 
-  const history = await roundCollection
-    .find(
-      { gameId: game.humanId },
-      { sort: { humanId: -1 }, projection: { grid: 1, _id: 0 } }
-    )
-    .limit(100)
-    .toArray();
+  // const history = await roundCollection
+  //   .find(
+  //     { gameId: game.humanId },
+  //     { sort: { humanId: -1 }, projection: { grid: 1, _id: 0 } }
+  //   )
+  //   .limit(100)
+  //   .toArray();
 
   await mongoClient.close();
 
   return {
     game,
     round,
-    history,
+    // history,
   };
 }

@@ -17,11 +17,13 @@ import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { usePrepareContractWrite, useContractWrite } from 'wagmi'
 import { useGameData } from '../hooks/useGameData';
 import { GameData, handleGameDataRequest } from './api/game';
+import { handleRefreshRequest } from "./api/refresh";
 
-type StagedCellKey = `${number}-${number}`
-type StagedCellMapping = { [key: StagedCellKey]: boolean }
-const stagedCellKey = (x: number, y: number) => `${x}-${y}` as StagedCellKey
-const gamePrice = (stagedChanges: number) => parseEther('0.001') * (BigInt(stagedChanges))
+type StagedCellKey = `${number}-${number}`;
+type StagedCellMapping = { [key: StagedCellKey]: boolean };
+const stagedCellKey = (x: number, y: number) => `${x}-${y}` as StagedCellKey;
+const gamePrice = (stagedChanges: number) =>
+  parseEther("0.001") * BigInt(stagedChanges);
 
 function GamePage() {
   const { data: gameData } = useGameData();
@@ -263,6 +265,7 @@ export default function Page({ fallback }: { [key: string]: GameData }) {
 export const getStaticProps: GetStaticProps<{
   fallback: { [key: string]: GameData };
 }> = async () => {
+  await handleRefreshRequest();
   const gameData = await handleGameDataRequest();
 
   console.log({ gameData });
@@ -273,6 +276,6 @@ export const getStaticProps: GetStaticProps<{
         "/api/game": gameData,
       },
     },
-    revalidate: 1,
+    revalidate: 5,
   };
 };
