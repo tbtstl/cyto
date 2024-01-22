@@ -3,19 +3,6 @@ import { GameData } from '../pages/api/game'
 import { handleEvolveBoardRequest } from "../pages/api/evolve";
 
 const fetcher: Fetcher<GameData> = () => {
-  console.log("refreshing game data");
-  fetch("/api/refresh")
-    .then((res) => {
-      if (res.status === 429) {
-        console.log("job already running, did not refresh game data");
-      } else if (res.status === 200) {
-        console.log("refreshed game data");
-      }
-    })
-    .catch((e) =>
-      console.log("did not refresh game data, unexpected error", e)
-    );
-  console.log("fetching game data");
   return fetch("/api/game").then((res) => res.json());
 };
 

@@ -17,7 +17,6 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { usePrepareContractWrite, useContractWrite } from "wagmi";
 import { useGameData } from "../hooks/useGameData";
 import { GameData, handleGameDataRequest } from "./api/game";
-import { handleRefreshRequest } from "./api/refresh";
 
 type StagedCellKey = `${number}-${number}`;
 type StagedCellMapping = { [key: StagedCellKey]: boolean };
@@ -313,13 +312,6 @@ export default function Page({ fallback }: { [key: string]: GameData }) {
 export const getServerSideProps: GetServerSideProps<{
   fallback: { [key: string]: GameData };
 }> = async () => {
-  handleRefreshRequest()
-    .then(() => {
-      console.log("successfully refreshed via serverSideProps");
-    })
-    .catch((e) => {
-      console.log("Could not refresh from serverSideProps", e);
-    });
   const gameData = await handleGameDataRequest();
 
   return {
