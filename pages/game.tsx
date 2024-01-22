@@ -73,13 +73,15 @@ function GamePage() {
 
   const contributionPercentage = useMemo(() => {
     if (playerContributions && playerTeam) {
-      return playerTeam === RED_TEAM_NUMBER
-        ? (parseInt(playerContributions.toString()) /
-            gameData.game.redContributions) *
+      return (
+        playerTeam === RED_TEAM_NUMBER
+          ? (parseInt(playerContributions.toString()) /
+              gameData.game.redContributions) *
             100
-        : (parseInt(playerContributions.toString()) /
-            gameData.game.blueContributions) *
-            100;
+          : (parseInt(playerContributions.toString()) /
+              gameData.game.blueContributions) *
+            100
+      ).toFixed(2);
     } else {
       return null;
     }

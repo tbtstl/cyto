@@ -40,9 +40,9 @@ export default async function handler(
 ) {
   const refreshed = await handleRefreshRequest();
   if (!refreshed) {
-    return res.status(429).json({ error: "Job already running" });
+    res.status(429).json({ error: "Job already running" });
   } else {
-    return res.status(200);
+    res.status(200);
   }
 }
 
