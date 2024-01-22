@@ -2,12 +2,8 @@
     "buildCommand": "yarn build:fe && npm i -g snarkjs@^0.7.0 && chmod +x ./scripts/downloadSnarkFiles.sh && ./scripts/downloadSnarkFiles.sh",
     "crons": [
       {
-        "path": "/api/evolve",
-        "schedule": "* * * * *"
-      },
-      {
         "path": "/api/refresh",
-        "schedule": "*/5 * * * * *"
+        "schedule": "* * * * *"
       }
     ],
     "functions": {
