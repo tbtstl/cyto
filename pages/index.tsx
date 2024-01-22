@@ -33,7 +33,7 @@ export default function Page(gameStats: GameStats) {
         <ContentBox>
           <h1>CYTO</h1>
           <br />
-          <p>Welcome to CYTO.</p>
+          <p>Welcome to CYTO, a game of cell evolution.</p>
           <p>
             We are in game <b>{gameStats.currentGame}</b>.<br />
             <span className="blue">
