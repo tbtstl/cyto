@@ -20,7 +20,6 @@ const fallbackData: GameData = {
     grid: Array.from({ length: 64 }, () => Array(64).fill(0)),
     roundEnd: 0,
   },
-  history: [],
 };
 
 export function useGameData() {
