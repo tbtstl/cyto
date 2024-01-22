@@ -38,6 +38,6 @@
 .footerContainer {
     margin-top: 1.25rem;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.625rem;
 }

@@ -6,6 +6,7 @@ import { Round } from "../../models/Round";
 export interface GameData {
   game: Game;
   round: Round;
+  history: Round[];
 }
 
 export default async function handler(
@@ -28,28 +29,22 @@ export async function handleGameDataRequest() {
     { sort: { humanId: -1 }, projection: { _id: 0 } }
   );
 
-  const round = await roundCollection.findOne(
-    {},
-    { sort: { humanId: -1 }, projection: { _id: 0 } }
-  );
-
-  if (!game || !round) {
-    throw new Error("No game or round found");
+  if (!game) {
+    throw new Error("No game found");
   }
 
-  // const history = await roundCollection
-  //   .find(
-  //     { gameId: game.humanId },
-  //     { sort: { humanId: -1 }, projection: { grid: 1, _id: 0 } }
-  //   )
-  //   .limit(100)
-  //   .toArray();
+  const [round, ...history] = await roundCollection
+    .find(
+      { gameId: game.humanId },
+      { sort: { humanId: -1 }, projection: { _id: 0 } }
+    )
+    .toArray();
 
   await mongoClient.close();
 
   return {
     game,
     round,
-    // history,
+    history,
   };
 }

@@ -31,6 +31,7 @@ function GamePage() {
   const { address, isDisconnected } = useAccount();
   const { disconnect } = useDisconnect();
   const { openConnectModal } = useConnectModal();
+  const [viewedRound, setViewedRound] = useState(gameData.round.humanId);
   const { data: playerTeam } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi,
@@ -91,6 +92,10 @@ function GamePage() {
 
   const onCellClick = useCallback(
     (x: number, y: number) => {
+      if (viewedRound !== gameData.round.humanId) {
+        // No-op if a user clicks on a cell in a previous round
+        return;
+      }
       if (!playerTeam || gameData.round.grid[x][y] !== 0) {
         return;
       }
@@ -117,6 +122,25 @@ function GamePage() {
     }
     return ret;
   }, [stagedCells, playerTeam]);
+
+  const handleGridViewClick = useCallback(
+    (value: number) => () => {
+      if (value === 0 || value === gameData.round.humanId + 1) {
+        // Out of bounds, no-op
+        return;
+      }
+      setViewedRound(value);
+    },
+    [setViewedRound]
+  );
+
+  const currentVisibleGrid = useMemo(() => {
+    const grids = [
+      ...gameData.history.map((r) => r.grid).reverse(),
+      stagedGrid,
+    ];
+    return grids[viewedRound - 1];
+  }, [stagedGrid, viewedRound]);
 
   const PrimaryButton = () => {
     if (isDisconnected) {
@@ -157,7 +181,17 @@ function GamePage() {
   return (
     <>
       <div className={`${styles.pageContainer}`}>
-        <GameBoard grid={stagedGrid} cellClickCB={onCellClick} />
+        <div>
+          <GameBoard grid={currentVisibleGrid} cellClickCB={onCellClick} />
+          <FooterButtons>
+            <Button onClick={handleGridViewClick(viewedRound - 1)}>←</Button>
+            <Button onClick={handleGridViewClick(viewedRound + 1)}>→</Button>
+            <p>
+              Round {viewedRound}
+              {viewedRound === gameData.round.humanId ? " (active)" : ""}
+            </p>
+          </FooterButtons>
+        </div>
         <div>
           <ContentBox>
             <h1>CYTO</h1>
@@ -279,8 +313,6 @@ export const getStaticProps: GetStaticProps<{
 }> = async () => {
   await handleRefreshRequest();
   const gameData = await handleGameDataRequest();
-
-  console.log({ gameData });
 
   return {
     props: {
