@@ -10,13 +10,13 @@ import { ContentBox } from '../components/contentBox'
 import { FooterButtons } from '../components/footerButtons';
 import { Button } from '../components/button';
 import { GetStaticProps } from 'next';
-import { useAccount, useContractRead } from 'wagmi';
-import { useCallback, useMemo, useState } from 'react';
-import { GameBoard } from '../components/gameBoard';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { usePrepareContractWrite, useContractWrite } from 'wagmi'
-import { useGameData } from '../hooks/useGameData';
-import { GameData, handleGameDataRequest } from './api/game';
+import { useAccount, useContractRead, useDisconnect } from "wagmi";
+import { useCallback, useMemo, useState } from "react";
+import { GameBoard } from "../components/gameBoard";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { usePrepareContractWrite, useContractWrite } from "wagmi";
+import { useGameData } from "../hooks/useGameData";
+import { GameData, handleGameDataRequest } from "./api/game";
 import { handleRefreshRequest } from "./api/refresh";
 
 type StagedCellKey = `${number}-${number}`;
@@ -29,6 +29,7 @@ function GamePage() {
   const { data: gameData } = useGameData();
   const router = useRouter();
   const { address, isDisconnected } = useAccount();
+  const { disconnect } = useDisconnect();
   const { openConnectModal } = useConnectModal();
   const { data: playerTeam } = useContractRead({
     address: CONTRACT_ADDRESS,
@@ -224,13 +225,24 @@ function GamePage() {
             >
               How to Play
             </Button>
-            <Button
-              onClick={() => {
-                router.push("/history");
-              }}
-            >
-              History
-            </Button>
+            {address && (
+              <>
+                <Button
+                  onClick={() => {
+                    router.push("/history");
+                  }}
+                >
+                  History
+                </Button>
+                <Button
+                  onClick={() => {
+                    disconnect();
+                  }}
+                >
+                  Log Out
+                </Button>
+              </>
+            )}
           </FooterButtons>
         </div>
       </div>
