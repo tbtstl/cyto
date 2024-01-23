@@ -3,15 +3,26 @@ import { SWRConfig } from 'swr'
 import { useRouter } from 'next/router'
 import styles from '../styles/game.module.css'
 import { formatEther, parseEther } from 'viem';
-import { CONTRACT_ADDRESS, RED_TEAM_NUMBER, GRID_SIZE } from '../constants/utils'
-import abi from '../constants/abi.json'
-import { ContentBox } from '../components/contentBox'
+import {
+  CONTRACT_ADDRESS,
+  RED_TEAM_NUMBER,
+  GRID_SIZE,
+  CHAIN_ID,
+} from "../constants/utils";
+import abi from "../constants/abi.json";
+import { ContentBox } from "../components/contentBox";
 
-import { FooterButtons } from '../components/footerButtons';
-import { Button } from '../components/button';
+import { FooterButtons } from "../components/footerButtons";
+import { Button } from "../components/button";
 import { GetServerSideProps, GetStaticProps } from "next";
-import { useAccount, useContractRead, useDisconnect } from "wagmi";
-import { useCallback, useMemo, useState } from "react";
+import {
+  useAccount,
+  useContractRead,
+  useDisconnect,
+  useNetwork,
+  useSwitchNetwork,
+} from "wagmi";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { GameBoard } from "../components/gameBoard";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { usePrepareContractWrite, useContractWrite } from "wagmi";
@@ -29,6 +40,8 @@ function GamePage() {
   const { data: gameData } = useGameData();
   const router = useRouter();
   const { address, isDisconnected } = useAccount();
+  const { chain } = useNetwork();
+  const { chains, pendingChainId, switchNetwork } = useSwitchNetwork();
   const { disconnect } = useDisconnect();
   const { openConnectModal } = useConnectModal();
   const [viewedRound, setViewedRound] = useState(gameData.round.humanId);
@@ -64,33 +77,6 @@ function GamePage() {
     args: [stagedCellsArgs],
   });
   const { isLoading, isSuccess, write } = useContractWrite(config);
-  const { data: playerContributions } = useContractRead({
-    address: CONTRACT_ADDRESS,
-    abi,
-    functionName: "playerContributions",
-    args: [address, gameData.game.humanId],
-  });
-
-  const contributionPercentage = useMemo(() => {
-    if (playerContributions && playerTeam) {
-      return (
-        playerTeam === RED_TEAM_NUMBER
-          ? (parseInt(playerContributions.toString()) /
-              gameData.game.redContributions) *
-            100
-          : (parseInt(playerContributions.toString()) /
-              gameData.game.blueContributions) *
-            100
-      ).toFixed(2);
-    } else {
-      return null;
-    }
-  }, [playerContributions]);
-
-  const tie =
-    BigInt(gameData.game.blueScore) === BigInt(gameData.game.redScore);
-  const teamBlueWinning =
-    BigInt(gameData.game.blueScore) > BigInt(gameData.game.redScore);
 
   const onCellClick = useCallback(
     (x: number, y: number) => {
@@ -108,6 +94,12 @@ function GamePage() {
     },
     [stagedCells, setStagedCells, playerTeam, viewedRound, gameData]
   );
+
+  useEffect(() => {
+    if (chain?.id !== CHAIN_ID && !!switchNetwork) {
+      switchNetwork(CHAIN_ID);
+    }
+  }, [chain, switchNetwork]);
 
   // Mutate grid value to include staged cells
   const stagedGrid = useMemo(() => {

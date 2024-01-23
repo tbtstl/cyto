@@ -2,6 +2,7 @@ import { hexToBigInt } from 'viem';
 import abi from './abi.json'
 import { PublicClient, WalletClient } from 'wagmi';
 export const USE_MAINNET = process.env.NEXT_PUBLIC_USE_MAINNET === 'true';
+export const CHAIN_ID = USE_MAINNET ? 7777777 : 999999999;
 export const GRID_SIZE = 64;
 export const CELL_SIZE_BITS = 2;
 export const MAX_CELL_VALUE = 3;
