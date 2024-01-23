@@ -162,7 +162,7 @@ export async function handleEvolveBoardRequest() {
       humanId: parseInt(latestRound.toString()),
       gameId: latestStoredGame.humanId,
       grid: grid as number[][],
-      roundEnd: Date.now() / 1000 + 60 * 15,
+      roundEnd: parseInt((Date.now() / 1000 + 60 * 15).toString()),
     };
     await roundCollection.insertOne(newRound);
     await mongoClient.close();
