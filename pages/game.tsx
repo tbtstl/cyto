@@ -74,7 +74,7 @@ function GamePage() {
     onSuccess: () => {
       // TODO: REFRESH GRID
     },
-    args: [stagedCellsArgs],
+    args: [stagedCellsArgs, numStagedChanges],
   });
   const { isLoading, isSuccess, write } = useContractWrite(config);
 
@@ -115,7 +115,7 @@ function GamePage() {
       }
     }
     return ret;
-  }, [stagedCells, playerTeam]);
+  }, [stagedCells, playerTeam, gameData]);
 
   const handleGridViewClick = useCallback(
     (value: number) => () => {
@@ -125,7 +125,7 @@ function GamePage() {
       }
       setViewedRound(value);
     },
-    [setViewedRound]
+    [setViewedRound, gameData]
   );
 
   const currentVisibleGrid = useMemo(() => {
@@ -134,7 +134,7 @@ function GamePage() {
       stagedGrid,
     ];
     return grids[viewedRound - 1];
-  }, [stagedGrid, viewedRound]);
+  }, [stagedGrid, viewedRound, gameData]);
 
   const PrimaryButton = () => {
     if (isDisconnected) {
