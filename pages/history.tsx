@@ -87,6 +87,7 @@ export default function Page({ history }: HistoryData) {
             history.map((game) => (
               <GameHistoryItem
                 player={address}
+                key={game.humanId}
                 team={playerTeam as number}
                 game={game}
               />

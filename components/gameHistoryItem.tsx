@@ -35,10 +35,11 @@ export function GameHistoryItem({
       functionName: "claimableRewards",
       args: [game.humanId, player],
     });
-  const renderClaimButton = useMemo(
-    () => (claimableRewards as bigint).toString() !== "0",
-    [claimableRewards]
-  );
+     const renderClaimButton = useMemo(
+       () =>
+         !isLoadingRewards && (claimableRewards as bigint).toString() !== "0",
+       [claimableRewards]
+     );
 
   useEffect(() => {
     const fetchGame = async () => {};
