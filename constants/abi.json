@@ -1,670 +1,452 @@
 [
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_owner",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "_verifier",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-    },
-    {
-        "inputs": [],
-        "name": "AlreadyJoinedTeam",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "GameIsLive",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "GameNotFinished",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "GameNotLive",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "InsufficientFunds",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "InvalidBoardLength",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "InvalidProof",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "InvalidTeam",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "OnlyOwner",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "OnlyPendingOwner",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "PositionOccupied",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "PositionOutOfRange",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "TransferFailed",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "UnregisteredPlayer",
-        "type": "error"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "bytes16[64]",
-                "name": "board",
-                "type": "bytes16[64]"
-            }
-        ],
-        "name": "BoardEvolved",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "game",
-                "type": "uint256"
-            }
-        ],
-        "name": "GameReset",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "uint8",
-                "name": "x",
-                "type": "uint8"
-            },
-            {
-                "indexed": true,
-                "internalType": "uint8",
-                "name": "y",
-                "type": "uint8"
-            },
-            {
-                "indexed": true,
-                "internalType": "uint8",
-                "name": "team",
-                "type": "uint8"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            }
-        ],
-        "name": "NewCell",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "uint8",
-                "name": "player",
-                "type": "uint8"
-            },
-            {
-                "indexed": true,
-                "internalType": "uint8",
-                "name": "team",
-                "type": "uint8"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "numNewCells",
-                "type": "uint256"
-            }
-        ],
-        "name": "NewCellsPlaced",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "uint8",
-                "name": "team",
-                "type": "uint8"
-            }
-        ],
-        "name": "NewTeamJoined",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "previousOwner",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "newOwner",
-                "type": "address"
-            }
-        ],
-        "name": "OwnershipTransferred",
-        "type": "event"
-    },
-    {
-        "inputs": [],
-        "name": "BASE_CELL_INJECTION_PRICE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "GAME_LENGTH",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "GRID_SIZE",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "MAINTENANCE_FEE_PERCENT",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "MAX_ROUNDS_PER_GAME",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "ROUND_LENGTH",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "TEAM_1",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "TEAM_2",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "acceptOwnershipTransfer",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+  {
+    "type": "constructor",
+    "inputs": [
+      { "name": "_owner", "type": "address", "internalType": "address" },
+      { "name": "_verifier", "type": "address", "internalType": "address" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "BASE_CELL_INJECTION_PRICE",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "GAME_LENGTH",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "GRID_SIZE",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint8", "internalType": "uint8" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MAINTENANCE_FEE_PERCENT",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MAX_ROUNDS_PER_GAME",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "ROUND_LENGTH",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "TEAM_1",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint8", "internalType": "uint8" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "TEAM_2",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint8", "internalType": "uint8" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "acceptOwnershipTransfer",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "board",
+    "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "outputs": [{ "name": "", "type": "bytes16", "internalType": "bytes16" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "claimRewards",
+    "inputs": [
+      { "name": "_game", "type": "uint256", "internalType": "uint256" },
+      { "name": "recipient", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "claimableRewards",
+    "inputs": [
+      { "name": "_game", "type": "uint256", "internalType": "uint256" },
+      { "name": "player", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "countCellValues",
+    "inputs": [],
+    "outputs": [
+      { "name": "count0", "type": "uint256", "internalType": "uint256" },
+      { "name": "count1", "type": "uint256", "internalType": "uint256" },
+      { "name": "count2", "type": "uint256", "internalType": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "currentGame",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "currentRound",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "evolveBoardState",
+    "inputs": [
+      { "name": "_pA", "type": "uint256[2]", "internalType": "uint256[2]" },
+      {
+        "name": "_pB",
+        "type": "uint256[2][2]",
+        "internalType": "uint256[2][2]"
+      },
+      { "name": "_pC", "type": "uint256[2]", "internalType": "uint256[2]" },
+      {
+        "name": "_pubSignals",
+        "type": "uint256[128]",
+        "internalType": "uint256[128]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getValueAtPosition",
+    "inputs": [
+      { "name": "_x", "type": "uint8", "internalType": "uint8" },
+      { "name": "_y", "type": "uint8", "internalType": "uint8" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "injectCell",
+    "inputs": [
+      { "name": "_x", "type": "uint8", "internalType": "uint8" },
+      { "name": "_y", "type": "uint8", "internalType": "uint8" }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "injectCells",
+    "inputs": [
+      { "name": "_cells", "type": "uint8[2][]", "internalType": "uint8[2][]" }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "joinTeam",
+    "inputs": [{ "name": "team", "type": "uint8", "internalType": "uint8" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "pendingOwner",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "playerClaimed",
+    "inputs": [
+      { "name": "", "type": "address", "internalType": "address" },
+      { "name": "", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "playerContributions",
+    "inputs": [
+      { "name": "", "type": "address", "internalType": "address" },
+      { "name": "", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "playerTeam",
+    "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "outputs": [{ "name": "", "type": "uint8", "internalType": "uint8" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "roundEnd",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "safeTransferOwnership",
+    "inputs": [
+      { "name": "_newOwner", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "teamContributions",
+    "inputs": [
+      { "name": "", "type": "uint8", "internalType": "uint8" },
+      { "name": "", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "teamScore",
+    "inputs": [
+      { "name": "", "type": "uint8", "internalType": "uint8" },
+      { "name": "", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [
+      { "name": "_newOwner", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "verifier",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract Groth16Verifier"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "BoardEvolved",
+    "inputs": [
+      {
         "name": "board",
-        "outputs": [
-            {
-                "internalType": "bytes16",
-                "name": "",
-                "type": "bytes16"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_game",
-                "type": "uint256"
-            },
-            {
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-            }
-        ],
-        "name": "claimRewards",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "countCellValues",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "count0",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "count1",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "count2",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "currentGame",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "currentRound",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256[2]",
-                "name": "_pA",
-                "type": "uint256[2]"
-            },
-            {
-                "internalType": "uint256[2][2]",
-                "name": "_pB",
-                "type": "uint256[2][2]"
-            },
-            {
-                "internalType": "uint256[2]",
-                "name": "_pC",
-                "type": "uint256[2]"
-            },
-            {
-                "internalType": "uint256[128]",
-                "name": "_pubSignals",
-                "type": "uint256[128]"
-            }
-        ],
-        "name": "evolveBoardState",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "_x",
-                "type": "uint8"
-            },
-            {
-                "internalType": "uint8",
-                "name": "_y",
-                "type": "uint8"
-            }
-        ],
-        "name": "getValueAtPosition",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "_x",
-                "type": "uint8"
-            },
-            {
-                "internalType": "uint8",
-                "name": "_y",
-                "type": "uint8"
-            }
-        ],
-        "name": "injectCell",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8[2][]",
-                "name": "_cells",
-                "type": "uint8[2][]"
-            }
-        ],
-        "name": "injectCells",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "team",
-                "type": "uint8"
-            }
-        ],
-        "name": "joinTeam",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "owner",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "pendingOwner",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "playerContributions",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "playerTeam",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "roundEnd",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_newOwner",
-                "type": "address"
-            }
-        ],
-        "name": "safeTransferOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            },
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "teamContributions",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            },
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "teamScore",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_newOwner",
-                "type": "address"
-            }
-        ],
-        "name": "transferOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "verifier",
-        "outputs": [
-            {
-                "internalType": "contract Groth16Verifier",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    }
+        "type": "bytes16[64]",
+        "indexed": false,
+        "internalType": "bytes16[64]"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewCell",
+    "inputs": [
+      {
+        "name": "x",
+        "type": "uint8",
+        "indexed": true,
+        "internalType": "uint8"
+      },
+      {
+        "name": "y",
+        "type": "uint8",
+        "indexed": true,
+        "internalType": "uint8"
+      },
+      {
+        "name": "team",
+        "type": "uint8",
+        "indexed": true,
+        "internalType": "uint8"
+      },
+      {
+        "name": "player",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewCellsPlaced",
+    "inputs": [
+      {
+        "name": "player",
+        "type": "uint8",
+        "indexed": true,
+        "internalType": "uint8"
+      },
+      {
+        "name": "team",
+        "type": "uint8",
+        "indexed": true,
+        "internalType": "uint8"
+      },
+      {
+        "name": "numNewCells",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewGame",
+    "inputs": [
+      {
+        "name": "game",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewTeamJoined",
+    "inputs": [
+      {
+        "name": "player",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "team",
+        "type": "uint8",
+        "indexed": true,
+        "internalType": "uint8"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferred",
+    "inputs": [
+      {
+        "name": "previousOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "newOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RewardsClaimed",
+    "inputs": [
+      {
+        "name": "game",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "player",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RoundEnded",
+    "inputs": [
+      {
+        "name": "round",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  { "type": "error", "name": "AlreadyJoinedTeam", "inputs": [] },
+  { "type": "error", "name": "GameIsLive", "inputs": [] },
+  { "type": "error", "name": "GameNotFinished", "inputs": [] },
+  { "type": "error", "name": "GameNotLive", "inputs": [] },
+  { "type": "error", "name": "InsufficientFunds", "inputs": [] },
+  { "type": "error", "name": "InvalidBoardLength", "inputs": [] },
+  { "type": "error", "name": "InvalidProof", "inputs": [] },
+  { "type": "error", "name": "InvalidTeam", "inputs": [] },
+  { "type": "error", "name": "OnlyOwner", "inputs": [] },
+  { "type": "error", "name": "OnlyPendingOwner", "inputs": [] },
+  { "type": "error", "name": "PositionOccupied", "inputs": [] },
+  { "type": "error", "name": "PositionOutOfRange", "inputs": [] },
+  { "type": "error", "name": "TransferFailed", "inputs": [] },
+  { "type": "error", "name": "UnregisteredPlayer", "inputs": [] }
 ]
