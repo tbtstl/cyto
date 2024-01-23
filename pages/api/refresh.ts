@@ -162,9 +162,11 @@ async function refreshBoardState(viemClient: PublicClient) {
     gameUpdate,
     { upsert: true, returnDocument: "after" }
   );
+
   await roundCollection.findOneAndUpdate(
     {
       humanId: parseInt(currentRoundId.toString()),
+      gameId: parseInt(currentGameId.toString()),
     },
     roundUpdate,
     { upsert: true, returnDocument: "after" }

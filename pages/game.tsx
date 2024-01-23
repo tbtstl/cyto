@@ -17,6 +17,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { usePrepareContractWrite, useContractWrite } from "wagmi";
 import { useGameData } from "../hooks/useGameData";
 import { GameData, handleGameDataRequest } from "./api/game";
+import { InfoContent } from "../components/infoContent";
 
 type StagedCellKey = `${number}-${number}`;
 type StagedCellMapping = { [key: StagedCellKey]: boolean };
@@ -194,63 +195,7 @@ function GamePage() {
           </FooterButtons>
         </div>
         <div>
-          <ContentBox>
-            <h1>CYTO</h1>
-            <p>
-              This is game <b>{gameData.game.humanId}</b>, round{" "}
-              <b>{gameData.round.humanId}</b> of <b>96</b>.<br />
-              <span className="blue">
-                <b>Team Blue</b>
-              </span>
-              &nbsp;
-              {!tie && teamBlueWinning
-                ? "is currently winning with "
-                : "currently has "}{" "}
-              <b>{gameData.game.blueScore} points</b>.<br />
-              <span className="red">
-                <b>Team Red</b>
-              </span>
-              &nbsp;
-              {!tie && !teamBlueWinning
-                ? "is currently winning with "
-                : "currently has"}{" "}
-              <b>{gameData.game.redScore} points</b>.<br />
-            </p>
-            {gameData.round.roundEnd < Date.now() / 1000 ? (
-              <p>
-                <b>The board is currently evolving.</b>
-              </p>
-            ) : (
-              <p>
-                The next evolution will occur at{" "}
-                <b>{formatTime(gameData.round.roundEnd)}</b>.
-              </p>
-            )}
-            <p>
-              Place a cell on the grid by clicking on an empty space. <br />
-              If it survives the next evolution, your team will earn a point.
-            </p>
-            <p>
-              The current prize pool is{" "}
-              <b>
-                {formatEther(
-                  BigInt(
-                    gameData.game.blueContributions +
-                      gameData.game.redContributions
-                  )
-                )}{" "}
-                ETH
-              </b>
-              .
-              {contributionPercentage && (
-                <>
-                  <br />
-                  You've contributed <b>{contributionPercentage}%</b> to your
-                  team's prize pool.
-                </>
-              )}
-            </p>
-          </ContentBox>
+          <InfoContent gameData={gameData} />
           <FooterButtons>
             <PrimaryButton />
             <Button
