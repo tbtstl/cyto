@@ -37,6 +37,17 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             name="description"
             content="CYTO is a game of cellular evolution"
           />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content="CYTO" />
+          <meta property="og:url" content="cyto.gg" />
+          <meta
+            property="og:image"
+            content="https://cyto.gg/img/Faviconbig.png"
+          />
+          <meta
+            property="og:description"
+            content="CYTO is a game of cellular evolution"
+          />
           <link rel="icon" href="/favicon.ico" />
         </Head>
         <Component {...pageProps} />
