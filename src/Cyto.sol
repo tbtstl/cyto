@@ -44,7 +44,7 @@ contract Cyto is SafeOwnable, GameBoard {
     event RoundEnded(uint256 round);
     event NewTeamJoined(address indexed player, uint8 indexed team);
     event NewCell(uint8 indexed x, uint8 indexed y, uint8 indexed team, address player);
-    event NewCellsPlaced(uint8 indexed player, uint8 indexed team, uint256 numNewCells);
+    event NewCellsPlaced(address indexed player, uint8 indexed team, uint256 numNewCells);
     event RewardsClaimed(uint256 indexed game, address indexed player, uint256 amount);
 
     modifier onlyPlayer() {
@@ -116,6 +116,7 @@ contract Cyto is SafeOwnable, GameBoard {
             _injectCell(_cells[i][0], _cells[i][1], team);
             emit NewCell(_cells[i][0], _cells[i][1], team, msg.sender);
         }
+        emit NewCellsPlaced(msg.sender, team, _cells.length);
         _transferFunds(owner, maintenanceFee);
     }
 

@@ -171,6 +171,7 @@ function GamePage() {
           onClick={() => {
             write && write();
           }}
+          disabled={numStagedChanges === 0}
         >
           Place {numStagedChanges}{" "}
           {parseInt(playerTeam as string) === RED_TEAM_NUMBER ? "RED" : "BLUE"}{" "}
@@ -186,8 +187,18 @@ function GamePage() {
         <div>
           <GameBoard grid={currentVisibleGrid} cellClickCB={onCellClick} />
           <FooterButtons>
-            <Button onClick={handleGridViewClick(viewedRound - 1)}>←</Button>
-            <Button onClick={handleGridViewClick(viewedRound + 1)}>→</Button>
+            <Button
+              onClick={handleGridViewClick(viewedRound - 1)}
+              disabled={viewedRound === 1}
+            >
+              ←
+            </Button>
+            <Button
+              onClick={handleGridViewClick(viewedRound + 1)}
+              disabled={viewedRound === gameData.round.humanId}
+            >
+              →
+            </Button>
             <p>
               Round {viewedRound}
               {viewedRound === gameData.round.humanId ? " (active)" : ""}
