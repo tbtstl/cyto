@@ -16,7 +16,7 @@ export default function Page() {
           </p>
           <p>
             The goal of the game is to ensure your team's cells occupy the
-            majoroity of the board every evolution. If your team wins, you win
+            majority of the board every evolution. If your team wins, you win
             ETH.
           </p>
         </ContentBox>
