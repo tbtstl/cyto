@@ -49,3 +49,8 @@
     background: var(--color-offWhiteDarker);
     cursor: pointer;
 }
+
+.gameCanvas.noClick>.team-0:hover {
+    background: var(--color-offWhite);
+    cursor: not-allowed;
+}

@@ -3,15 +3,24 @@ import styles from '../styles/game.module.css';
 import { GRID_SIZE } from '../constants/utils';
 
 
-export function GameBoard({ grid, cellClickCB }: { grid: number[][], cellClickCB: (x: number, y: number) => void }) {
-
-    return (
-        <div className={styles.gameCanvas}>
-            {[...Array(GRID_SIZE)].map((_, x) =>
-                [...Array(GRID_SIZE)].map((_, y) => <Cell x={x} y={y} value={grid[x][y]} cb={cellClickCB} />)
-            )}
-        </div>
-    )
+export function GameBoard({
+  grid,
+  cellClickCB,
+  clickable,
+}: {
+  grid: number[][];
+  clickable: boolean;
+  cellClickCB: (x: number, y: number) => void;
+}) {
+  return (
+    <div className={`${styles.gameCanvas} ${clickable ? "" : styles.noClick}`}>
+      {[...Array(GRID_SIZE)].map((_, x) =>
+        [...Array(GRID_SIZE)].map((_, y) => (
+          <Cell x={x} y={y} value={grid[x][y]} cb={cellClickCB} />
+        ))
+      )}
+    </div>
+  );
 }
 
 function Cell({ x, y, value, cb }: { x: number, y: number, value: number, cb: (x: number, y: number) => void }) {

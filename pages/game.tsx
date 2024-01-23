@@ -106,7 +106,7 @@ function GamePage() {
         [stagedCellKey(x, y)]: !stagedCells[stagedCellKey(x, y)],
       });
     },
-    [stagedCells, setStagedCells, playerTeam]
+    [stagedCells, setStagedCells, playerTeam, viewedRound, gameData]
   );
 
   // Mutate grid value to include staged cells
@@ -185,7 +185,11 @@ function GamePage() {
     <>
       <div className={`${styles.pageContainer}`}>
         <div>
-          <GameBoard grid={currentVisibleGrid} cellClickCB={onCellClick} />
+          <GameBoard
+            grid={currentVisibleGrid}
+            cellClickCB={onCellClick}
+            clickable={!!address && viewedRound === gameData.round.humanId}
+          />
           <FooterButtons>
             <Button
               onClick={handleGridViewClick(viewedRound - 1)}
