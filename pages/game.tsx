@@ -74,7 +74,7 @@ function GamePage() {
     onSuccess: () => {
       // TODO: REFRESH GRID
     },
-    args: [stagedCellsArgs, numStagedChanges],
+    args: [stagedCellsArgs],
   });
   const { isLoading, isSuccess, write } = useContractWrite(config);
 
