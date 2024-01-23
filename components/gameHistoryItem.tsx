@@ -35,45 +35,61 @@ export function GameHistoryItem({
       functionName: "claimableRewards",
       args: [game.humanId, player],
     });
-     const renderClaimButton = useMemo(
-       () =>
-         !isLoadingRewards && (claimableRewards as bigint).toString() !== "0",
-       [claimableRewards]
-     );
+    const { data: claimedRewards, isLoading: isLoadingClaimedRewards } =
+      useContractRead({
+        ...contractConfig,
+        functionName: "playerClaimed",
+        args: [player, game.humanId],
+      });
+    const renderClaimButton = useMemo(
+      () =>
+        !isLoadingRewards &&
+        !claimedRewards &&
+        (claimableRewards as bigint).toString() !== "0",
+      [claimableRewards]
+    );
 
-  useEffect(() => {
-    const fetchGame = async () => {};
-  }, [player]);
+    useEffect(() => {
+      const fetchGame = async () => {};
+    }, [player]);
 
-  return (
-    <p>
-      Game {game.humanId} —{" "}
-      <span
-        className={
-          game.blueScore > game.redScore
-            ? "blue"
+    return (
+      <p>
+        Game {game.humanId} —{" "}
+        <span
+          className={
+            game.blueScore > game.redScore
+              ? "blue"
+              : game.blueScore === game.redScore
+              ? ""
+              : "red"
+          }
+        >
+          {game.blueScore}-{game.redScore}
+          {game.blueScore > game.redScore
+            ? " (Team Blue Wins)"
             : game.blueScore === game.redScore
-            ? ""
-            : "red"
-        }
-      >
-        {game.blueScore}-{game.redScore}
-        {game.blueScore > game.redScore
-          ? " (Team Blue Wins)"
-          : game.blueScore === game.redScore
-          ? " (Tie)"
-          : " (Team Red Wins)"}
-      </span>
-      {renderClaimButton && (
-        <>
-          <span>
-            &nbsp;Reward: {formatEther(claimableRewards as bigint)} ETH
-          </span>
-          <span className="clickableText" onClick={() => write()}>
-            &nbsp;Click to claim
-          </span>
-        </>
-      )}
-    </p>
-  );
+            ? " (Tie)"
+            : " (Team Red Wins)"}
+        </span>
+        {renderClaimButton && (
+          <>
+            <span>
+              &nbsp;Reward: {formatEther(claimableRewards as bigint)} ETH&nbsp;
+            </span>
+            <span className="clickableText" onClick={() => write()}>
+              Click to claim
+            </span>
+          </>
+        )}
+        {!!claimedRewards && (
+          <>
+            <span>
+              &nbsp;Reward: {formatEther(claimableRewards as bigint)} ETH&nbsp;
+            </span>
+            <span>(already claimed)</span>
+          </>
+        )}
+      </p>
+    );
 }
