@@ -212,6 +212,17 @@ function GamePage() {
             >
               How to Play
             </Button>
+            <Button
+              onClick={() => {
+                if (window !== null) {
+                  window
+                    .open("https://warpcast.com/~/channel/cyto", "_blank")
+                    ?.focus();
+                }
+              }}
+            >
+              Chat
+            </Button>
             {address && (
               <>
                 <Button
