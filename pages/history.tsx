@@ -107,7 +107,7 @@ export default function Page({ history }: HistoryData) {
   );
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const viemClient = createPublicClient({
     chain: USE_MAINNET ? zora : zoraSepolia,
     transport: http(),
